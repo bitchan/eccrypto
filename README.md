@@ -4,7 +4,7 @@ JavaScript Elliptic curve cryptography library for both browserify and node.
 
 ## Motivation
 
-There is currently no any isomorphic ECC library which provide ECDSA, ECDH and ECIES for both Node.JS and Browser. So `eccrypto` is an attempt to create one. Current goals:
+There is currently no any isomorphic ECC library which provides ECDSA, ECDH and ECIES for both Node.JS and Browser. So `eccrypto` is an attempt to create one. Current goals:
 
 * Implement ECDSA
 * Implement ECDH
@@ -35,7 +35,7 @@ So we use [seck256k1](https://www.npmjs.com/package/secp256k1) library in Node f
 
 ## Usage
 
-With the help of browserify `eccrypto` provides different implementation for Browser and Node.js with the same API. Because WebCryptoAPI defines asynchronous promise-driven API, implementation for Node needs to use promises too.
+With the help of browserify `eccrypto` provides different implementations for Browser and Node.js with the same API. Because WebCryptoAPI defines asynchronous promise-driven API, implementation for Node needs to use promises too.
 
 ```js
 var eccrypto = require("eccrypto");
