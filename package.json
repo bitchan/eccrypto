@@ -1,0 +1,36 @@
+{
+  "name": "eccrypto",
+  "version": "0.0.0",
+  "description": "JavaScript Elliptic curve cryptography library",
+  "main": "index.js",
+  "browser": "browser.js",
+  "scripts": {
+    "test": "mocha && jshint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bitchan/eccrypto.git"
+  },
+  "keywords": [
+    "ecc",
+    "ecdsa",
+    "ecdh",
+    "ecies",
+    "crypto",
+    "cryptography",
+    "secp256k1",
+    "elliptic",
+    "curve"
+  ],
+  "author": "Kagami Hiiragi",
+  "license": "CC0",
+  "bugs": {
+    "url": "https://github.com/bitchan/eccrypto/issues"
+  },
+  "homepage": "https://github.com/bitchan/eccrypto",
+  "devDependencies": {
+    "chai": "*",
+    "jshint": "*",
+    "mocha": "*"
+  }
+}
