@@ -5,7 +5,12 @@
   "main": "index.js",
   "browser": "browser.js",
   "scripts": {
-    "test": "mocha && jshint ."
+    "test": "mocha && xvfb-run -a karma start && jshint .",
+    "m": "mocha",
+    "k": "xvfb-run -a karma start",
+    "kc": "xvfb-run -a karma start --browsers Chromium",
+    "kf": "xvfb-run -a karma start --browsers Firefox",
+    "j": "jshint ."
   },
   "repository": {
     "type": "git",
@@ -31,6 +36,13 @@
   "devDependencies": {
     "chai": "*",
     "jshint": "*",
+    "karma": "^0.12.28",
+    "karma-browserify": "^1.0.1",
+    "karma-chrome-launcher": "^0.1.7",
+    "karma-cli": "~0.0.4",
+    "karma-firefox-launcher": "^0.1.3",
+    "karma-mocha": "^0.1.10",
+    "karma-mocha-reporter": "^0.3.1",
     "mocha": "*"
   }
 }
