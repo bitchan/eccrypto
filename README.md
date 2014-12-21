@@ -9,7 +9,7 @@ There is currently no any isomorphic ECC library which provide ECDSA, ECDH and E
 * Implement ECDSA
 * Implement ECDH
 * Implement ECIES
-* Support secp256k1 curve, HMAC-SHA256 for ECDH and AES-256-CB for ECIES
+* Support secp256k1 curve, HMAC-SHA256 for ECDH and AES-256-CBC for ECIES
 
 Implementation details:
 
@@ -19,17 +19,17 @@ Implementation details:
 
 Possible future goals:
 
-* Support other curves/KDF/MAC/encryptions
+* Support other curves/KDF/MAC/symmetric encryption schemes
 
 ## Native crypto API limitations
 
 ### crypto
 
-ECDH only works in Node 0.11+ (see https://github.com/joyent/node/pull/5854), ECDSA is supported only when keys are in PEM format (see https://github.com/joyent/node/issues/6904), ECIES is not supported at all.
+ECDH only works in Node 0.11+ (see https://github.com/joyent/node/pull/5854), ECDSA is only supported when keys are in PEM format (see https://github.com/joyent/node/issues/6904) and ECIES is not supported at all.
 
 ### WebCryptoAPI
 
-ECDSA and ECDH are supported in Chrome [only on Windows](https://sites.google.com/a/chromium.org/dev/blink/webcrypto#TOC-Supported-algorithms-as-of-Chrome-41-) (see also [bug 338883](https://code.google.com/p/chromium/issues/detail?id=338883)), aren't supported by Firefox (fixed only in 36.0+, see [bug 1034854](https://bugzilla.mozilla.org/show_bug.cgi?id=1034854)) and ECIES is not defined at all in WebCryptoAPI draft. Also WebCryptoAPI draft [currently defines](http://www.w3.org/TR/WebCryptoAPI/#EcKeyGenParams-dictionary) only curves recommended by NIST which means secp256k1 is not supported (see also: [[1](http://lists.w3.org/Archives/Public/public-webcrypto-comments/2013Dec/0001.html), [[2]](https://bugzilla.mozilla.org/show_bug.cgi?id=1051509)).
+ECDSA and ECDH are supported in Chrome [only on Windows](https://sites.google.com/a/chromium.org/dev/blink/webcrypto#TOC-Supported-algorithms-as-of-Chrome-41-) (see also [bug 338883](https://code.google.com/p/chromium/issues/detail?id=338883)), aren't supported by Firefox (fixed only in 36.0+, see [bug 1034854](https://bugzilla.mozilla.org/show_bug.cgi?id=1034854)) and ECIES is not defined at all in WebCryptoAPI draft. Also WebCryptoAPI draft [currently defines](http://www.w3.org/TR/WebCryptoAPI/#EcKeyGenParams-dictionary) only curves recommended by NIST which means that secp256k1 is not supported (see also: [[1]](http://lists.w3.org/Archives/Public/public-webcrypto-comments/2013Dec/0001.html), [[2]](https://bugzilla.mozilla.org/show_bug.cgi?id=1051509)).
 
 So we use [seck256k1](https://www.npmjs.com/package/secp256k1) library in Node for ECDSA, [elliptic](https://www.npmjs.com/package/elliptic) in Browser for ECDSA and implement ECDH and ECIES manually with the help of native crypto API.
 
