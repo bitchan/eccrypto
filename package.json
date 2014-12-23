@@ -5,7 +5,7 @@
   "main": "index.js",
   "browser": "browser.js",
   "scripts": {
-    "test": "mocha && xvfb-run -a karma start && jshint .",
+    "test": "mocha && jshint .",
     "m": "mocha",
     "k": "xvfb-run -a karma start",
     "kc": "xvfb-run -a karma start --browsers Chromium",
@@ -44,5 +44,8 @@
     "karma-mocha": "^0.1.10",
     "karma-mocha-reporter": "^0.3.1",
     "mocha": "*"
+  },
+  "dependencies": {
+    "secp256k1": "~0.0.13"
   }
 }
