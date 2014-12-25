@@ -1,10 +1,11 @@
 var expect = require("chai").expect;
+var crypto = require("crypto");
 var eccrypto = require("./");
 
 var privateKey = Buffer(32);
 privateKey.fill(1);
 var publicKey = eccrypto.getPublic(privateKey);
-var msg = Buffer("test");
+var msg = crypto.createHash("sha256").update("test").digest();
 
 describe("Key", function() {
   it("should allow to convert private key to public", function() {
@@ -18,6 +19,7 @@ describe("ECDSA", function() {
     return eccrypto.sign(privateKey, msg)
       .then(function(sig) {
         expect(Buffer.isBuffer(sig)).to.be.true;
+        expect(sig.toString("hex")).to.equal("3044022078c15897a34de6566a0d396fdef660698c59fef56d34ee36bef14ad89ee0f6f8022016e02e8b7285d93feafafbe745702f142973a77d5c2fa6293596357e17b3b47c");
         return eccrypto.verify(publicKey, msg, sig);
       });
   });
