@@ -21,11 +21,8 @@ exports.getPublic = function(privateKey) {
  * Create an ECDSA signature.
  * @param {Buffer} privateKey A 32-byte private key
  * @param {Buffer} msg The message being signed
- * @return {Promise.<Buffer,number>} A promise that resolves with the
- * signature or rejects with error code:
- *
- *   - 0: invalid nonce
- *   - -1: invalid private key or message
+ * @return {Promise.<Buffer,undefined>} A promise that resolves with the
+ * signature or rejects on bad private key/message.
  */
 // FIXME(Kagami): What to do in case of invalid nonce?
 exports.sign = function(privateKey, msg) {
@@ -35,11 +32,11 @@ exports.sign = function(privateKey, msg) {
         if (code === 1) {
           resolve(sig);
         } else {
-          reject(code);
+          reject();
         }
       });
     } catch(e) {
-      reject(-1);
+      reject();
     }
   });
 };
@@ -49,12 +46,8 @@ exports.sign = function(privateKey, msg) {
  * @param {Buffer} publicKey The public key
  * @param {Buffer} msg The message being verified
  * @param {Buffer} sig The signature
- * @return {Promise.<null,number>} A promise that resolves on correct
- * signature and rejects on bad signature with error code:
- *
- *   - 0: incorrect signature
- *   - -1: invalid public key
- *   - -2: invalid signature
+ * @return {Promise} A promise that resolves on correct signature and
+ * rejects on bad signature/public key.
  */
 exports.verify = function(publicKey, msg, sig) {
   return new Promise(function(resolve, reject) {
@@ -62,7 +55,7 @@ exports.verify = function(publicKey, msg, sig) {
       if (code === 1) {
         resolve();
       } else {
-        reject(code);
+        reject();
       }
     });
   });
