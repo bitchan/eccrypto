@@ -6,11 +6,16 @@ var privateKey = Buffer(32);
 privateKey.fill(1);
 var publicKey = eccrypto.getPublic(privateKey);
 var msg = crypto.createHash("sha256").update("test").digest();
+var otherMsg = crypto.createHash("sha256").update("test2").digest();
 
-describe("Key", function() {
+describe("Key convertion", function() {
   it("should allow to convert private key to public", function() {
     expect(Buffer.isBuffer(publicKey)).to.be.true;
     expect(publicKey.toString("hex")).to.equal("041b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f70beaf8f588b541507fed6a642c5ab42dfdf8120a7f639de5122d47a69a8e8d1");
+  });
+
+  it("should throw on invalid private key", function() {
+    expect(eccrypto.getPublic.bind(null, Buffer("test"))).to.throw(Error);
   });
 });
 
@@ -24,11 +29,18 @@ describe("ECDSA", function() {
       });
   });
 
+  it("should allow to verify using private key", function() {
+    return eccrypto.sign(privateKey, msg)
+      .then(function(sig) {
+        expect(Buffer.isBuffer(sig)).to.be.true;
+        return eccrypto.verify(privateKey, msg, sig);
+      });
+  });
   it("shouldn't verify incorrect signature", function(done) {
     eccrypto.sign(privateKey, msg)
       .then(function(sig) {
         expect(Buffer.isBuffer(sig)).to.be.true;
-        return eccrypto.verify(publicKey, Buffer("other msg"), sig);
+        return eccrypto.verify(publicKey, otherMsg, sig);
       }).catch(function() {
         done();
       });

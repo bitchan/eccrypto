@@ -13,9 +13,10 @@ var secp256k1 = require("secp256k1");
  * @param {Buffer} publicKey A 32-byte private key
  * @return {Buffer} A 65-byte public key
  */
-exports.getPublic = function(privateKey) {
+function getPublic(privateKey) {
   return secp256k1.createPublicKey(privateKey);
 };
+exports.getPublic = getPublic;
 
 /**
  * Create an ECDSA signature.
@@ -43,13 +44,14 @@ exports.sign = function(privateKey, msg) {
 
 /**
  * Verify an ECDSA signature.
- * @param {Buffer} publicKey The public key
+ * @param {Buffer} key Private or public key
  * @param {Buffer} msg The message being verified
  * @param {Buffer} sig The signature
  * @return {Promise} A promise that resolves on correct signature and
  * rejects on bad signature/public key.
  */
-exports.verify = function(publicKey, msg, sig) {
+exports.verify = function(key, msg, sig) {
+  var publicKey = key.length === 32 ? getPublic(key) : key;
   return new Promise(function(resolve, reject) {
     secp256k1.verify(publicKey, msg, sig, function(code) {
       if (code === 1) {

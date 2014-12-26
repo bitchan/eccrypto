@@ -26,8 +26,8 @@ exports.sign = function(privateKey, msg) {
   }
 };
 
-exports.verify = function(publicKey, msg, sig) {
-  var key = ec.keyPair(null, publicKey);
+exports.verify = function(key, msg, sig) {
+  key = ec.keyPair(key);
   if (key.verify(msg, sig)) {
     return Promise.resolve();
   } else {
