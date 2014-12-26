@@ -15,7 +15,7 @@ var secp256k1 = require("secp256k1");
  */
 function getPublic(privateKey) {
   return secp256k1.createPublicKey(privateKey);
-};
+}
 exports.getPublic = getPublic;
 
 /**
