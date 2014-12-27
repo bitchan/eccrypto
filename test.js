@@ -16,6 +16,7 @@ describe("Key convertion", function() {
 
   it("should throw on invalid private key", function() {
     expect(eccrypto.getPublic.bind(null, Buffer("00", "hex"))).to.throw(Error);
+    expect(eccrypto.getPublic.bind(null, Buffer("test"))).to.throw(Error);
   });
 });
 
