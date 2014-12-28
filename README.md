@@ -16,7 +16,7 @@ Implementation details:
 * Use Node.js crypto module/library bindings where possible
 * Use WebCryptoAPI where possible
 * Promise-driven API
-* Only secp256k1 curve, HMAC-SHA256 for ECDH and AES-256-CBC for ECIES
+* Only secp256k1 curve, only HMAC-SHA-256 and AES-256-CBC for ECIES
 
 Possible future goals:
 
