@@ -41,11 +41,13 @@ With the help of browserify `eccrypto` provides different implementations for Br
 ```js
 var crypto = require("crypto");
 var eccrypto = require("eccrypto");
+
 var privateKey = crypto.randomBytes(32);
 var publicKey = eccrypto.getPublic(privateKey);
-var str = "test msg";
+var str = "msg to sign";
 // Always hash you msg to sign!
 var msg = crypto.createHash("sha256").update(str).digest();
+
 eccrypto.sign(privateKey, msg).then(function(sig) {
   console.log("signed:", sig);
   // Public key is sufficient for verifying but private key also could be
