@@ -37,6 +37,7 @@ describe("ECDSA", function() {
         return eccrypto.verify(privateKey, msg, sig);
       });
   });
+
   it("shouldn't verify incorrect signature", function(done) {
     eccrypto.sign(privateKey, msg)
       .then(function(sig) {
