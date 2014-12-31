@@ -18,7 +18,7 @@ With the help of browserify `eccrypto` provides different implementations for Br
 * Use Node.js crypto module/library bindings where possible
 * Use WebCryptoAPI where possible
 * Promise-driven API
-* Only secp256k1 curve, only HMAC-SHA-256 and AES-256-CBC for ECIES
+* Only secp256k1 curve, only SHA-512 (KDF), HMAC-SHA-256 (HMAC) and AES-256-CBC for ECIES
 
 ### Native crypto API limitations
 
