@@ -12,11 +12,9 @@ var secp256k1 = require("secp256k1");
  * Compute the public key for a given private key.
  * @param {Buffer} publicKey A 32-byte private key
  * @return {Buffer} A 65-byte public key
+ * @function
  */
-function getPublic(privateKey) {
-  return secp256k1.createPublicKey(privateKey);
-}
-exports.getPublic = getPublic;
+var getPublic = exports.getPublic = secp256k1.createPublicKey;
 
 /**
  * Create an ECDSA signature.
