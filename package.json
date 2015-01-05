@@ -46,7 +46,7 @@
     "mocha": "*"
   },
   "dependencies": {
-    "elliptic": "^0.15.15",
+    "elliptic": "^1.0.0",
     "es6-promise": "^2.0.1",
     "secp256k1": "~0.0.13"
   }
