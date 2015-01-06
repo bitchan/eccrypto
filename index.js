@@ -5,7 +5,9 @@
 
 "use strict";
 
-require("es6-promise").polyfill();
+var promise = typeof Promise === "undefined" ?
+              require("es6-promise").Promise :
+              Promise;
 var secp256k1 = require("secp256k1");
 
 /**
@@ -25,7 +27,7 @@ var getPublic = exports.getPublic = secp256k1.createPublicKey;
  */
 // FIXME(Kagami): What to do in case of invalid nonce?
 exports.sign = function(privateKey, msg) {
-  return new Promise(function(resolve, reject) {
+  return new promise(function(resolve, reject) {
     try {
       secp256k1.sign(privateKey, msg, function(code, sig) {
         if (code === 1) {
@@ -50,7 +52,7 @@ exports.sign = function(privateKey, msg) {
  */
 exports.verify = function(key, msg, sig) {
   var publicKey = key.length === 32 ? getPublic(key) : key;
-  return new Promise(function(resolve, reject) {
+  return new promise(function(resolve, reject) {
     secp256k1.verify(publicKey, msg, sig, function(code) {
       if (code === 1) {
         resolve();
