@@ -2,6 +2,12 @@
  * Browser eccrypto implementation.
  */
 
+// NOTE(Kagami): We don't use promise shim in Browser implementation
+// because it's supported natively in new browsers (see
+// <http://caniuse.com/#feat=promises>) and we can use only new browsers
+// because of the WebCryptoAPI (see
+// <http://caniuse.com/#feat=cryptography>).
+
 "use strict";
 
 var EC = require("elliptic").ec;
