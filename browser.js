@@ -14,13 +14,14 @@ var EC = require("elliptic").ec;
 
 var ec = new EC("secp256k1");
 
-exports.getPublic = function(privateKey) {
-  // `elliptic` doesn't have such checkings so we do it by ourself. We
-  // should always ensure that library user doesn't try to do something
-  // dumb.
-  if (privateKey.length !== 32) {
-    throw new Error("Bad private key");
+function assert(condition, message) {
+  if (!condition) {
+    throw new Error(message || "Assertion failed");
   }
+}
+
+exports.getPublic = function(privateKey) {
+  assert(privateKey.length === 32, "Bad private key");
   // XXX(Kagami): `elliptic.utils.encode` returns array for every
   // encoding except `hex`.
   return new Buffer(ec.keyPair(privateKey).getPublic("arr"));
@@ -28,20 +29,14 @@ exports.getPublic = function(privateKey) {
 
 exports.sign = function(privateKey, msg) {
   var key = ec.keyPair(privateKey);
-  var sig;
-  try {
-    sig = new Buffer(key.sign(msg).toDER());
-    return Promise.resolve(sig);
-  } catch(e) {
-    return Promise.reject();
-  }
+  return new Promise(function(resolve) {
+    resolve(new Buffer(key.sign(msg).toDER()));
+  });
 };
 
 exports.verify = function(key, msg, sig) {
   key = ec.keyPair(key);
-  if (key.verify(msg, sig)) {
-    return Promise.resolve();
-  } else {
-    return Promise.reject();
-  }
+  return new Promise(function(resolve, reject) {
+    return key.verify(msg, sig) ? resolve() : reject();
+  });
 };

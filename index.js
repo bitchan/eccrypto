@@ -25,20 +25,9 @@ var getPublic = exports.getPublic = secp256k1.createPublicKey;
  * @return {Promise.<Buffer>} A promise that resolves with the
  * signature and rejects on bad key or message.
  */
-// FIXME(Kagami): What to do in case of invalid nonce?
 exports.sign = function(privateKey, msg) {
-  return new promise(function(resolve, reject) {
-    try {
-      secp256k1.sign(privateKey, msg, function(code, sig) {
-        if (code === 1) {
-          resolve(sig);
-        } else {
-          reject();
-        }
-      });
-    } catch(e) {
-      reject();
-    }
+  return new promise(function(resolve) {
+    resolve(secp256k1.sign(privateKey, msg));
   });
 };
 
@@ -53,12 +42,6 @@ exports.sign = function(privateKey, msg) {
 exports.verify = function(key, msg, sig) {
   var publicKey = key.length === 32 ? getPublic(key) : key;
   return new promise(function(resolve, reject) {
-    secp256k1.verify(publicKey, msg, sig, function(code) {
-      if (code === 1) {
-        resolve();
-      } else {
-        reject();
-      }
-    });
+    return secp256k1.verify(publicKey, msg, sig) === 1 ? resolve() : reject();
   });
 };
