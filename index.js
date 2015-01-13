@@ -33,14 +33,13 @@ exports.sign = function(privateKey, msg) {
 
 /**
  * Verify an ECDSA signature.
- * @param {Buffer} key - A private or public key
+ * @param {Buffer} publicKey - A 65-byte public key
  * @param {Buffer} msg - The message being verified
  * @param {Buffer} sig - The signature
  * @return {Promise.<undefined>} A promise that resolves on correct
  * signature and rejects on bad key or signature.
  */
-exports.verify = function(key, msg, sig) {
-  var publicKey = key.length === 32 ? getPublic(key) : key;
+exports.verify = function(publicKey, msg, sig) {
   return new promise(function(resolve, reject) {
     return secp256k1.verify(publicKey, msg, sig) === 1 ? resolve() : reject();
   });

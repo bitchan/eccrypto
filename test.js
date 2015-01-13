@@ -38,14 +38,6 @@ describe("ECDSA", function() {
     });
   });
 
-  it("should allow to verify using private key", function() {
-    return eccrypto.sign(privateKey, msg)
-      .then(function(sig) {
-        expect(Buffer.isBuffer(sig)).to.be.true;
-        return eccrypto.verify(privateKey, msg, sig);
-      });
-  });
-
   it("shouldn't verify incorrect signature", function(done) {
     eccrypto.sign(privateKey, msg).then(function(sig) {
       expect(Buffer.isBuffer(sig)).to.be.true;

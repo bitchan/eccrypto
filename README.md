@@ -38,6 +38,8 @@ So we use [seck256k1](https://www.npmjs.com/package/secp256k1) library in Node f
 
 ## Usage
 
+### ECDSA
+
 ```js
 var crypto = require("crypto");
 var eccrypto = require("eccrypto");
@@ -45,17 +47,25 @@ var eccrypto = require("eccrypto");
 var privateKey = crypto.randomBytes(32);
 var publicKey = eccrypto.getPublic(privateKey);
 var str = "msg to sign";
-// Always hash you msg to sign!
+// Always hash you message to sign!
 var msg = crypto.createHash("sha256").update(str).digest();
 
 eccrypto.sign(privateKey, msg).then(function(sig) {
   console.log("signed:", sig);
-  // Public key is sufficient for verifying but private key also could be
-  // passed for convinience.
   eccrypto.verify(publicKey, msg, sig).then(function() {
     console.log("verified");
   });
 });
+```
+
+### ECDH
+
+```js
+```
+
+### ECIES
+
+```js
 ```
 
 ## License
