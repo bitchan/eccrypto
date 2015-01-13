@@ -8,7 +8,10 @@
 var promise = typeof Promise === "undefined" ?
               require("es6-promise").Promise :
               Promise;
+// TODO(Kagami): We may fallback to pure JS implementation
+// (`browser.js`) if this modules are failed to load.
 var secp256k1 = require("secp256k1");
+var ecdh = require("./build/Release/ecdh");
 
 /**
  * Compute the public key for a given private key.
@@ -42,5 +45,18 @@ exports.sign = function(privateKey, msg) {
 exports.verify = function(publicKey, msg, sig) {
   return new promise(function(resolve, reject) {
     return secp256k1.verify(publicKey, msg, sig) === 1 ? resolve() : reject();
+  });
+};
+
+/**
+ * Derive shared secret for given private and public keys.
+ * @param {Buffer} privateKeyA - Sender's private key
+ * @param {Buffer} publicKeyB - Recipient's public key
+ * @return {Promise.<Buffer>} A promise that resolves with the derived
+ * shared secret (Px) and rejects on bad key.
+ */
+exports.derive = function(privateKeyA, publicKeyB) {
+  return new promise(function(resolve) {
+    resolve(ecdh.derive(privateKeyA, publicKeyB));
   });
 };

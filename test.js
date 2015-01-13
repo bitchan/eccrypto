@@ -81,8 +81,6 @@ describe("ECDSA", function() {
   });
 });
 
-if (typeof window !== "undefined") {
-
 describe("ECDH", function() {
   it("should derive shared secret from privkey A and pubkey B", function() {
     return eccrypto.derive(privateKeyA, publicKeyB).then(function(Px) {
@@ -92,7 +90,7 @@ describe("ECDH", function() {
       return eccrypto.derive(privateKeyB, publicKeyA).then(function(Px2) {
         expect(Buffer.isBuffer(Px2)).to.be.true;
         expect(Px2.length).to.equal(32);
-        expect(Px.toString("hex")).to.equal(Px2.toString("hex"));
+        expect(bufferEqual(Px, Px2)).to.be.true;
       });
     });
   });
@@ -109,6 +107,8 @@ describe("ECDH", function() {
     });
   });
 });
+
+if (typeof window !== "undefined") {
 
 describe("ECIES", function() {
   var ephemPrivateKey = Buffer(32);

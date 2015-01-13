@@ -1,3 +1,4 @@
-.travis.yml
-.jshint*
-karma.conf.js
+/.travis.yml
+/.jshint*
+/karma.conf.js
+/build/

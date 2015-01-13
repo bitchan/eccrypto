@@ -4,12 +4,7 @@ JavaScript Elliptic curve cryptography library for both browserify and node.
 
 ## Motivation
 
-There is currently no any isomorphic ECC library which provides ECDSA, ECDH and ECIES for both Node.js and Browser and uses the fastest libraries available (e.g. [secp256k1-node](https://github.com/wanderer/secp256k1-node) is much faster than other libraries but can be used only on Node.js). So `eccrypto` is an attempt to create one. Current goals:
-
-- [x] ~~Convert private key to public~~
-- [x] ~~ECDSA~~
-- [ ] ECDH
-- [ ] ECIES
+There is currently no any isomorphic ECC library which provides ECDSA, ECDH and ECIES for both Node.js and Browser and uses the fastest implementation available (e.g. [secp256k1-node](https://github.com/wanderer/secp256k1-node) is much faster than other libraries but can be used only on Node.js). So `eccrypto` is an attempt to create one.
 
 ## Implementation details
 
@@ -61,6 +56,19 @@ eccrypto.sign(privateKey, msg).then(function(sig) {
 ### ECDH
 
 ```js
+var crypto = require("crypto");
+var eccrypto = require("eccrypto");
+
+var privateKeyA = crypto.randomBytes(32);
+var publicKeyA = eccrypto.getPublic(privateKeyA);
+var privateKeyB = crypto.randomBytes(32);
+var publicKeyB = eccrypto.getPublic(privateKeyB);
+
+eccrypto.derive(privateKeyA, publicKeyB).then(function(sharedKey1) {
+  eccrypto.derive(privateKeyB, publicKeyA).then(function(sharedKey2) {
+    console.log("Both shared keys are equal:", sharedKey1, sharedKey2);
+  });
+});
 ```
 
 ### ECIES

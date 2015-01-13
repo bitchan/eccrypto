@@ -5,6 +5,7 @@
   "main": "index.js",
   "browser": "browser.js",
   "scripts": {
+    "install": "node-gyp rebuild || exit 0",
     "test": "mocha && xvfb-run -a karma start && jshint .",
     "m": "mocha",
     "k": "xvfb-run -a karma start",
@@ -49,6 +50,9 @@
   "dependencies": {
     "elliptic": "^1.0.1",
     "es6-promise": "^2.0.1",
+    "nan": "^1.4.1"
+  },
+  "optionalDependencies": {
     "secp256k1": "~0.0.13"
   }
 }
