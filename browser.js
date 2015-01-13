@@ -35,14 +35,14 @@ function sha512(msg) {
 }
 
 function getAes(op) {
-  return function(iv, key, msg) {
+  return function(iv, key, data) {
     var importAlgorithm = {name: "AES-CBC"};
     var keyp = subtle.importKey("raw", key, importAlgorithm, false, [op]);
     return keyp.then(function(cryptoKey) {
       var encAlgorithm = {name: "AES-CBC", iv: iv};
-      return subtle[op](encAlgorithm, cryptoKey, msg);
-    }).then(function(cipherText) {
-      return new Buffer(new Uint8Array(cipherText));
+      return subtle[op](encAlgorithm, cryptoKey, data);
+    }).then(function(result) {
+      return new Buffer(new Uint8Array(result));
     });
   };
 }
@@ -109,7 +109,7 @@ exports.encrypt = function(publicKeyTo, msg, opts) {
   assert(subtle, "WebCryptoAPI is not supported");
   opts = opts || {};
   // Tmp variables to save context from flat promises;
-  var iv, ephemPublicKey, cipherText, macKey;
+  var iv, ephemPublicKey, ciphertext, macKey;
   return new Promise(function(resolve) {
     var ephemPrivateKey = opts.ephemPrivateKey || randomBytes(32);
     ephemPublicKey = getPublic(ephemPrivateKey);
@@ -121,15 +121,15 @@ exports.encrypt = function(publicKeyTo, msg, opts) {
     var encryptionKey = hash.slice(0, 32);
     macKey = hash.slice(32);
     return aesCbcEncrypt(iv, encryptionKey, msg);
-  }).then(function(encrypted) {
-    cipherText = encrypted;
-    var dataToMac = Buffer.concat([iv, ephemPublicKey, cipherText]);
+  }).then(function(data) {
+    ciphertext = data;
+    var dataToMac = Buffer.concat([iv, ephemPublicKey, ciphertext]);
     return hmacSha256Sign(macKey, dataToMac);
   }).then(function(mac) {
     return {
       iv: iv,
       ephemPublicKey: ephemPublicKey,
-      cipherText: cipherText,
+      ciphertext: ciphertext,
       mac: mac,
     };
   });
@@ -137,7 +137,7 @@ exports.encrypt = function(publicKeyTo, msg, opts) {
 
 exports.decrypt = function(privateKey, opts) {
   assert(subtle, "WebCryptoAPI is not supported");
-  // Tmp variables to save context from flat promises;
+  // Tmp variable to save context from flat promises;
   var encryptionKey;
   return derive(privateKey, opts.ephemPublicKey).then(function(Px) {
     return sha512(Px);
@@ -147,12 +147,12 @@ exports.decrypt = function(privateKey, opts) {
     var dataToMac = Buffer.concat([
       opts.iv,
       opts.ephemPublicKey,
-      opts.cipherText
+      opts.ciphertext
     ]);
     return hmacSha256Verify(macKey, dataToMac, opts.mac);
-  }).then(function(goodMac) {
-    assert(goodMac, "Bad MAC");
-    return aesCbcDecrypt(opts.iv, encryptionKey, opts.cipherText);
+  }).then(function(macGood) {
+    assert(macGood, "Bad MAC");
+    return aesCbcDecrypt(opts.iv, encryptionKey, opts.ciphertext);
   }).then(function(msg) {
     return new Buffer(new Uint8Array(msg));
   });
