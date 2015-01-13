@@ -25,6 +25,7 @@
     "crypto",
     "cryptography",
     "secp256k1",
+    "K-256",
     "elliptic",
     "curve"
   ],

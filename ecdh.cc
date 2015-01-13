@@ -86,7 +86,8 @@ NAN_METHOD(Derive) {
   }
 
   uint8_t* shared = (uint8_t *)malloc(PRIVKEY_SIZE);
-  if (derive((uint8_t *)privkey_a, (uint8_t *)pubkey_b, shared)) {
+  if (shared == NULL ||
+      derive((uint8_t *)privkey_a, (uint8_t *)pubkey_b, shared)) {
     free(shared);
     return NanThrowError("Internal error");
   }
