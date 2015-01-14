@@ -3,8 +3,6 @@
 #include <openssl/evp.h>
 #include <openssl/ec.h>
 
-#define PRIVKEY_SIZE 32
-#define PUBKEY_SIZE 65
 #define CHECK(cond) do { if (!(cond)) goto error; } while (0)
 
 using node::Buffer;
@@ -12,6 +10,9 @@ using v8::Handle;
 using v8::FunctionTemplate;
 using v8::Object;
 using v8::String;
+
+static const int PRIVKEY_SIZE = 32;
+static const int PUBKEY_SIZE = 65;
 
 int derive(const uint8_t* privkey_a, const uint8_t* pubkey_b, uint8_t* shared) {
   int rc = -1;
