@@ -39,16 +39,21 @@ So we use [seck256k1](https://www.npmjs.com/package/secp256k1) library in Node f
 var crypto = require("crypto");
 var eccrypto = require("eccrypto");
 
+// A new random 32-byte private key.
 var privateKey = crypto.randomBytes(32);
+// Corresponding uncompressed (65-byte) public key.
 var publicKey = eccrypto.getPublic(privateKey);
-var str = "msg to sign";
+
+var str = "message to sign";
 // Always hash you message to sign!
 var msg = crypto.createHash("sha256").update(str).digest();
 
 eccrypto.sign(privateKey, msg).then(function(sig) {
-  console.log("signed:", sig);
+  console.log("Signature in DER format:", sig);
   eccrypto.verify(publicKey, msg, sig).then(function() {
-    console.log("verified");
+    console.log("Signature is OK");
+  }).catch(function() {
+    console.log("Signature is BAD");
   });
 });
 ```
