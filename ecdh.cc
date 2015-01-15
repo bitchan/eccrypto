@@ -3,16 +3,16 @@
 #include <openssl/evp.h>
 #include <openssl/ec.h>
 
-#define CHECK(cond) do { if (!(cond)) goto error; } while (0)
-
 using node::Buffer;
 using v8::Handle;
 using v8::FunctionTemplate;
 using v8::Object;
 using v8::String;
 
-static const int PRIVKEY_SIZE = 32;
-static const int PUBKEY_SIZE = 65;
+static const size_t PRIVKEY_SIZE = 32;
+static const size_t PUBKEY_SIZE = 65;
+
+#define CHECK(cond) do { if (!(cond)) goto error; } while (0)
 
 int derive(const uint8_t* privkey_a, const uint8_t* pubkey_b, uint8_t* shared) {
   int rc = -1;
@@ -64,6 +64,8 @@ error:
   BN_free(pkey_bn);
   return rc;
 }
+
+#undef CHECK
 
 NAN_METHOD(Derive) {
   NanScope();
