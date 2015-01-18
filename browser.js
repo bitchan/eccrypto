@@ -67,7 +67,7 @@ var getPublic = exports.getPublic = function(privateKey) {
   assert(privateKey.length === 32, "Bad private key");
   // XXX(Kagami): `elliptic.utils.encode` returns array for every
   // encoding except `hex`.
-  return new Buffer(ec.keyPair(privateKey).getPublic("arr"));
+  return new Buffer(ec.keyFromPrivate(privateKey).getPublic("arr"));
 };
 
 // NOTE(Kagami): We don't use promise shim in Browser implementation
@@ -78,8 +78,7 @@ var getPublic = exports.getPublic = function(privateKey) {
 exports.sign = function(privateKey, msg) {
   return new Promise(function(resolve) {
     assert(privateKey.length === 32, "Bad private key");
-    var key = ec.keyPair(privateKey);
-    resolve(new Buffer(key.sign(msg).toDER()));
+    resolve(new Buffer(ec.sign(msg, privateKey).toDER()));
   });
 };
 
@@ -87,8 +86,7 @@ exports.verify = function(publicKey, msg, sig) {
   return new Promise(function(resolve, reject) {
     assert(publicKey.length === 65, "Bad public key");
     assert(publicKey[0] === 4, "Bad public key");
-    var key = ec.keyPair(publicKey);
-    return key.verify(msg, sig) ? resolve() : reject();
+    return ec.verify(msg, sig, publicKey) ? resolve() : reject();
   });
 };
 
@@ -97,8 +95,8 @@ var derive = exports.derive = function(privateKeyA, publicKeyB) {
     assert(privateKeyA.length === 32, "Bad private key");
     assert(publicKeyB.length === 65, "Bad public key");
     assert(publicKeyB[0] === 4, "Bad public key");
-    var keyA = ec.keyPair(privateKeyA);
-    var keyB = ec.keyPair(publicKeyB);
+    var keyA = ec.keyFromPrivate(privateKeyA);
+    var keyB = ec.keyFromPublic(publicKeyB);
     var Px = keyA.derive(keyB.getPublic());  // BN instance
     resolve(new Buffer(Px.toString(16, 2), "hex"));
   });

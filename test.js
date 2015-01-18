@@ -64,8 +64,13 @@ describe("ECDSA", function() {
   it("should reject promise on invalid key when verifying", function(done) {
     eccrypto.sign(privateKey, msg).then(function(sig) {
       expect(Buffer.isBuffer(sig)).to.be.true;
-      eccrypto.verify(Buffer("test"), msg, sig).catch(function(e) {
-        done();
+      eccrypto.verify(Buffer("test"), msg, sig).catch(function() {
+        var badKey = new Buffer(65);
+        publicKey.copy(badKey);
+        badKey[0] ^= 1;
+        eccrypto.verify(badKey, msg, sig).catch(function() {
+          done();
+        });
       });
     });
   });
