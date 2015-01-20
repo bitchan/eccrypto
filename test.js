@@ -89,6 +89,7 @@ describe("ECDSA", function() {
   it("should allow to sign and verify messages less than 32 bytes", function() {
     return eccrypto.sign(privateKey, shortMsg).then(function(sig) {
       expect(Buffer.isBuffer(sig)).to.be.true;
+      expect(sig.toString("hex")).to.equal("304402204737396b697e5a3400e3aedd203d8be89879f97708647252bd0c17752ff4c8f302201d52ef234de82ce0719679fa220334c83b80e21b8505a781d32d94a27d9310aa");
       return eccrypto.verify(publicKey, shortMsg, sig);
     });
   });

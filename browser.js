@@ -78,7 +78,7 @@ var getPublic = exports.getPublic = function(privateKey) {
 exports.sign = function(privateKey, msg) {
   return new Promise(function(resolve) {
     assert(privateKey.length === 32, "Bad private key");
-    resolve(new Buffer(ec.sign(msg, privateKey).toDER()));
+    resolve(new Buffer(ec.sign(msg, privateKey, {canonical: true}).toDER()));
   });
 };
 
