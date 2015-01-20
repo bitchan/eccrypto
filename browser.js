@@ -86,7 +86,11 @@ exports.verify = function(publicKey, msg, sig) {
   return new Promise(function(resolve, reject) {
     assert(publicKey.length === 65, "Bad public key");
     assert(publicKey[0] === 4, "Bad public key");
-    return ec.verify(msg, sig, publicKey) ? resolve() : reject();
+    if (ec.verify(msg, sig, publicKey)) {
+      resolve();
+    } else {
+      reject(new Error("Bad signature"));
+    }
   });
 };
 
@@ -98,7 +102,7 @@ var derive = exports.derive = function(privateKeyA, publicKeyB) {
     var keyA = ec.keyFromPrivate(privateKeyA);
     var keyB = ec.keyFromPublic(publicKeyB);
     var Px = keyA.derive(keyB.getPublic());  // BN instance
-    resolve(new Buffer(Px.toString(16, 2), "hex"));
+    resolve(new Buffer(Px.toArray()));
   });
 };
 
