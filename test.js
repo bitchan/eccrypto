@@ -1,10 +1,11 @@
 var expect = require("chai").expect;
-var crypto = require("crypto");
+var createHash = require("crypto").createHash;
 var bufferEqual = require("buffer-equal");
 var eccrypto = require("./");
 
-var msg = crypto.createHash("sha256").update("test").digest();
-var otherMsg = crypto.createHash("sha256").update("test2").digest();
+var msg = createHash("sha256").update("test").digest();
+var otherMsg = createHash("sha256").update("test2").digest();
+var shortMsg = createHash("sha1").update("test").digest();
 
 var privateKey = Buffer(32);
 privateKey.fill(1);
@@ -82,6 +83,13 @@ describe("ECDSA", function() {
       eccrypto.verify(publicKey, msg, sig).catch(function() {
         done();
       });
+    });
+  });
+
+  it("should allow to sign and verify messages less than 32 bytes", function() {
+    return eccrypto.sign(privateKey, shortMsg).then(function(sig) {
+      expect(Buffer.isBuffer(sig)).to.be.true;
+      return eccrypto.verify(publicKey, shortMsg, sig);
     });
   });
 });
