@@ -62,7 +62,7 @@ function equalConstTime(b1, b2) {
  */
 var getPublic = exports.getPublic = secp256k1.createPublicKey;
 
-function padMsg(msg) {
+function zeropad(msg) {
   var zeroes;
   if (msg.length < 32) {
     zeroes = new Buffer(32 - msg.length);
@@ -83,7 +83,7 @@ exports.sign = function(privateKey, msg) {
   return new promise(function(resolve) {
     assert(msg.length > 0, "Message should not be empty");
     assert(msg.length <= 32, "Message is too long");
-    resolve(secp256k1.sign(privateKey, padMsg(msg)));
+    resolve(secp256k1.sign(privateKey, zeropad(msg)));
   });
 };
 
@@ -99,7 +99,7 @@ exports.verify = function(publicKey, msg, sig) {
   return new promise(function(resolve, reject) {
     assert(msg.length > 0, "Message should not be empty");
     assert(msg.length <= 32, "Message is too long");
-    if (secp256k1.verify(publicKey, padMsg(msg), sig) === 1) {
+    if (secp256k1.verify(publicKey, zeropad(msg), sig) === 1) {
      resolve();
     } else {
      reject(new Error("Bad signature"));
