@@ -1,5 +1,7 @@
 # eccrypto [![Build Status](https://travis-ci.org/bitchan/eccrypto.svg?branch=master)](https://travis-ci.org/bitchan/eccrypto)
 
+[![NPM](https://nodei.co/npm/eccrypto.png)](https://www.npmjs.com/package/eccrypto)
+
 JavaScript Elliptic curve cryptography library for both browserify and node.
 
 ## Motivation
