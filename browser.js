@@ -7,8 +7,8 @@
 var EC = require("elliptic").ec;
 
 var ec = new EC("secp256k1");
-// TODO(Kagami): Try to support IE11.
-var subtle = window.crypto.subtle || window.crypto.webkitSubtle;
+var cryptoObj = window.crypto || window.msCrypto || {};
+var subtle = cryptoObj.subtle || cryptoObj.webkitSubtle;
 
 function assert(condition, message) {
   if (!condition) {
@@ -111,7 +111,7 @@ var derive = exports.derive = function(privateKeyA, publicKeyB) {
 };
 
 exports.encrypt = function(publicKeyTo, msg, opts) {
-  assert(subtle, "WebCryptoAPI is not supported");
+  assert(subtle, "WebCryptoAPI is not available");
   opts = opts || {};
   // Tmp variables to save context from flat promises;
   var iv, ephemPublicKey, ciphertext, macKey;
@@ -141,7 +141,7 @@ exports.encrypt = function(publicKeyTo, msg, opts) {
 };
 
 exports.decrypt = function(privateKey, opts) {
-  assert(subtle, "WebCryptoAPI is not supported");
+  assert(subtle, "WebCryptoAPI is not available");
   // Tmp variable to save context from flat promises;
   var encryptionKey;
   return derive(privateKey, opts.ephemPublicKey).then(function(Px) {
