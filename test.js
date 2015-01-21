@@ -93,6 +93,28 @@ describe("ECDSA", function() {
       return eccrypto.verify(publicKey, shortMsg, sig);
     });
   });
+
+  it("shouldn't sign and verify messages longer than 32 bytes", function(done) {
+    var longMsg = Buffer(40);
+    var someSig = Buffer("304402204737396b697e5a3400e3aedd203d8be89879f97708647252bd0c17752ff4c8f302201d52ef234de82ce0719679fa220334c83b80e21b8505a781d32d94a27d9310aa", "hex");
+    eccrypto.sign(privateKey, longMsg).catch(function() {
+      eccrypto.verify(privateKey, longMsg, someSig).catch(function(e) {
+        expect(e.message).to.not.match(/bad signature/i);
+        done();
+      });
+    });
+  });
+
+  it("shouldn't sign and verify empty messages", function(done) {
+    var emptyMsg = Buffer(0);
+    var someSig = Buffer("304402204737396b697e5a3400e3aedd203d8be89879f97708647252bd0c17752ff4c8f302201d52ef234de82ce0719679fa220334c83b80e21b8505a781d32d94a27d9310aa", "hex");
+    eccrypto.sign(privateKey, emptyMsg).catch(function() {
+      eccrypto.verify(publicKey, emptyMsg, someSig).catch(function(e) {
+        expect(e.message).to.not.match(/bad signature/i);
+        done();
+      });
+    });
+  });
 });
 
 describe("ECDH", function() {

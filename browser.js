@@ -78,6 +78,8 @@ var getPublic = exports.getPublic = function(privateKey) {
 exports.sign = function(privateKey, msg) {
   return new Promise(function(resolve) {
     assert(privateKey.length === 32, "Bad private key");
+    assert(msg.length > 0, "Message should not be empty");
+    assert(msg.length <= 32, "Message is too long");
     resolve(new Buffer(ec.sign(msg, privateKey, {canonical: true}).toDER()));
   });
 };
@@ -86,6 +88,8 @@ exports.verify = function(publicKey, msg, sig) {
   return new Promise(function(resolve, reject) {
     assert(publicKey.length === 65, "Bad public key");
     assert(publicKey[0] === 4, "Bad public key");
+    assert(msg.length > 0, "Message should not be empty");
+    assert(msg.length <= 32, "Message is too long");
     if (ec.verify(msg, sig, publicKey)) {
       resolve();
     } else {

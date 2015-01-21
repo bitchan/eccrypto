@@ -81,6 +81,8 @@ function padMsg(msg) {
  */
 exports.sign = function(privateKey, msg) {
   return new promise(function(resolve) {
+    assert(msg.length > 0, "Message should not be empty");
+    assert(msg.length <= 32, "Message is too long");
     resolve(secp256k1.sign(privateKey, padMsg(msg)));
   });
 };
@@ -95,6 +97,8 @@ exports.sign = function(privateKey, msg) {
  */
 exports.verify = function(publicKey, msg, sig) {
   return new promise(function(resolve, reject) {
+    assert(msg.length > 0, "Message should not be empty");
+    assert(msg.length <= 32, "Message is too long");
     if (secp256k1.verify(publicKey, padMsg(msg), sig) === 1) {
      resolve();
     } else {
