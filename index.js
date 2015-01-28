@@ -62,16 +62,6 @@ function equalConstTime(b1, b2) {
  */
 var getPublic = exports.getPublic = secp256k1.createPublicKey;
 
-function zeropad(msg) {
-  var zeroes;
-  if (msg.length < 32) {
-    zeroes = new Buffer(32 - msg.length);
-    zeroes.fill(0);
-    msg = Buffer.concat([zeroes, msg]);
-  }
-  return msg;
-}
-
 /**
  * Create an ECDSA signature.
  * @param {Buffer} privateKey - A 32-byte private key
@@ -83,7 +73,7 @@ exports.sign = function(privateKey, msg) {
   return new promise(function(resolve) {
     assert(msg.length > 0, "Message should not be empty");
     assert(msg.length <= 32, "Message is too long");
-    resolve(secp256k1.sign(privateKey, zeropad(msg)));
+    resolve(secp256k1.sign(privateKey, msg));
   });
 };
 
@@ -99,7 +89,7 @@ exports.verify = function(publicKey, msg, sig) {
   return new promise(function(resolve, reject) {
     assert(msg.length > 0, "Message should not be empty");
     assert(msg.length <= 32, "Message is too long");
-    if (secp256k1.verify(publicKey, zeropad(msg), sig) === 1) {
+    if (secp256k1.verify(publicKey, msg, sig) === 1) {
      resolve();
     } else {
      reject(new Error("Bad signature"));
