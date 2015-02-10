@@ -82,15 +82,15 @@ exports.sign = function(privateKey, msg) {
  * @param {Buffer} publicKey - A 65-byte public key
  * @param {Buffer} msg - The message being verified
  * @param {Buffer} sig - The signature
- * @return {Promise.<undefined>} A promise that resolves on correct
- * signature and rejects on bad key or signature.
+ * @return {Promise.<null>} A promise that resolves on correct signature
+ * and rejects on bad key or signature.
  */
 exports.verify = function(publicKey, msg, sig) {
   return new promise(function(resolve, reject) {
     assert(msg.length > 0, "Message should not be empty");
     assert(msg.length <= 32, "Message is too long");
     if (secp256k1.verify(publicKey, msg, sig) === 1) {
-     resolve();
+     resolve(null);
     } else {
      reject(new Error("Bad signature"));
     }

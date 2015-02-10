@@ -91,7 +91,7 @@ exports.verify = function(publicKey, msg, sig) {
     assert(msg.length > 0, "Message should not be empty");
     assert(msg.length <= 32, "Message is too long");
     if (ec.verify(msg, sig, publicKey)) {
-      resolve();
+      resolve(null);
     } else {
       reject(new Error("Bad signature"));
     }
