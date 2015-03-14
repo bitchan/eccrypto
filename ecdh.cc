@@ -3,7 +3,6 @@
 #include <openssl/evp.h>
 #include <openssl/ec.h>
 
-using node::Buffer;
 using v8::Handle;
 using v8::FunctionTemplate;
 using v8::Object;
@@ -76,10 +75,10 @@ NAN_METHOD(Derive) {
     return NanThrowError("Bad input");
   }
 
-  char* privkey_a = Buffer::Data(args[0]->ToObject());
-  size_t privkey_a_len = Buffer::Length(args[0]->ToObject());
-  char* pubkey_b = Buffer::Data(args[1]->ToObject());
-  size_t pubkey_b_len = Buffer::Length(args[1]->ToObject());
+  char* privkey_a = node::Buffer::Data(args[0]->ToObject());
+  size_t privkey_a_len = node::Buffer::Length(args[0]->ToObject());
+  char* pubkey_b = node::Buffer::Data(args[1]->ToObject());
+  size_t pubkey_b_len = node::Buffer::Length(args[1]->ToObject());
   if (privkey_a == NULL ||
       privkey_a_len != PRIVKEY_SIZE ||
       pubkey_b == NULL ||
