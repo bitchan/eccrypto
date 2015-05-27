@@ -13,7 +13,7 @@ var crypto = require("crypto");
 try {
   var secp256k1 = require("secp256k1");
 } catch (e) {
-  return module.exports = require("./browser");
+  return (module.exports = require("./browser"));
 }
 var ecdh = require("./build/Release/ecdh");
 
