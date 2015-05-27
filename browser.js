@@ -7,7 +7,7 @@
 var EC = require("elliptic").ec;
 
 var ec = new EC("secp256k1");
-var cryptoObj = window.crypto || window.msCrypto || {};
+var cryptoObj = global.crypto || global.msCrypto || {};
 var subtle = cryptoObj.subtle || cryptoObj.webkitSubtle;
 
 function assert(condition, message) {
@@ -18,7 +18,7 @@ function assert(condition, message) {
 
 function randomBytes(size) {
   var arr = new Uint8Array(size);
-  window.crypto.getRandomValues(arr);
+  global.crypto.getRandomValues(arr);
   return new Buffer(arr);
 }
 

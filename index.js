@@ -9,9 +9,12 @@ var promise = typeof Promise === "undefined" ?
               require("es6-promise").Promise :
               Promise;
 var crypto = require("crypto");
-// TODO(Kagami): We may fallback to pure JS implementation
-// (`browser.js`) if this modules are failed to load.
-var secp256k1 = require("secp256k1");
+// try to use secp256k1, fallback to browser implementation
+try {
+  var secp256k1 = require("secp256k1");
+} catch (e) {
+  return module.exports = require("./browser");
+}
 var ecdh = require("./build/Release/ecdh");
 
 function assert(condition, message) {
