@@ -6,7 +6,7 @@
   "browser": "browser.js",
   "scripts": {
     "install": "node-gyp rebuild || exit 0",
-    "test": "mocha && xvfb-run -a karma start && jshint .",
+    "test": "ECCRYPTO_NO_FALLBACK=1 mocha && xvfb-run -a karma start && jshint .",
     "m": "mocha",
     "k": "xvfb-run -a karma start",
     "kc": "xvfb-run -a karma start --browsers Chromium",
