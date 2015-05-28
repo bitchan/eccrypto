@@ -3,6 +3,8 @@ node_js:
   - "0.10"
 addons:
   firefox: "34.0"
+env:
+  - ECCRYPTO_NO_FALLBACK=1
 notifications:
   email:
     on_success: never

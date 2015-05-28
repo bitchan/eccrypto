@@ -12,10 +12,14 @@ var crypto = require("crypto");
 // try to use secp256k1, fallback to browser implementation
 try {
   var secp256k1 = require("secp256k1");
+  var ecdh = require("./build/Release/ecdh");
 } catch (e) {
-  return (module.exports = require("./browser"));
+  if (process.env.ECCRYPTO_NO_FALLBACK) {
+    throw e;
+  } else {
+    return (module.exports = require("./browser"));
+  }
 }
-var ecdh = require("./build/Release/ecdh");
 
 function assert(condition, message) {
   if (!condition) {
