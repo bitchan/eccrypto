@@ -70,15 +70,15 @@ NAN_METHOD(Derive) {
   NanScope();
 
   if (args.Length() != 2 ||
-      !args[0]->IsObject() ||  // privkey_a
-      !args[1]->IsObject()) {  // pubkey_b
+      !node::Buffer::HasInstance(args[0]) ||  // privkey_a
+      !node::Buffer::HasInstance(args[1])) {  // pubkey_b
     return NanThrowError("Bad input");
   }
 
-  char* privkey_a = node::Buffer::Data(args[0]->ToObject());
-  size_t privkey_a_len = node::Buffer::Length(args[0]->ToObject());
-  char* pubkey_b = node::Buffer::Data(args[1]->ToObject());
-  size_t pubkey_b_len = node::Buffer::Length(args[1]->ToObject());
+  char* privkey_a = node::Buffer::Data(args[0]);
+  size_t privkey_a_len = node::Buffer::Length(args[0]);
+  char* pubkey_b = node::Buffer::Data(args[1]);
+  size_t pubkey_b_len = node::Buffer::Length(args[1]);
   if (privkey_a == NULL ||
       privkey_a_len != PRIVKEY_SIZE ||
       pubkey_b == NULL ||

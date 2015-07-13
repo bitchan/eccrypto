@@ -100,6 +100,8 @@ exports.verify = function(publicKey, msg, sig) {
 
 var derive = exports.derive = function(privateKeyA, publicKeyB) {
   return new Promise(function(resolve) {
+    assert(Buffer.isBuffer(privateKeyA), "Bad input");
+    assert(Buffer.isBuffer(publicKeyB), "Bad input");
     assert(privateKeyA.length === 32, "Bad private key");
     assert(publicKeyB.length === 65, "Bad public key");
     assert(publicKeyB[0] === 4, "Bad public key");
