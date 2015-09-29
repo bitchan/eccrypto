@@ -50,10 +50,10 @@
   },
   "dependencies": {
     "elliptic": "^5.0.0",
-    "es6-promise": "^2.0.1",
-    "nan": "^1.4.1"
+    "es6-promise": "^3.0.2",
+    "nan": "^2.0.9"
   },
   "optionalDependencies": {
-    "secp256k1": "~0.0.15"
+    "secp256k1": "^1.1.4"
   }
 }
