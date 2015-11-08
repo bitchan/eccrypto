@@ -61,13 +61,30 @@ function equalConstTime(b1, b2) {
   return res === 0;
 }
 
+function pad32(msg){
+  var buf;
+  if (msg.length < 32) {
+    buf = new Buffer(32);
+    buf.fill(0);
+    msg.copy(buf, 32 - msg.length);
+    return buf;
+  } else {
+    return msg;
+  }
+}
+
 /**
  * Compute the public key for a given private key.
  * @param {Buffer} privateKey - A 32-byte private key
  * @return {Buffer} A 65-byte public key.
  * @function
  */
-var getPublic = exports.getPublic = secp256k1.createPublicKey;
+var getPublic = exports.getPublic = function(privateKey) {
+  assert(privateKey.length === 32, "Bad private key");
+  // See https://github.com/wanderer/secp256k1-node/issues/46
+  var compressed = secp256k1.publicKeyCreate(privateKey);
+  return secp256k1.publicKeyConvert(compressed, false);
+};
 
 /**
  * Create an ECDSA signature.
@@ -80,7 +97,9 @@ exports.sign = function(privateKey, msg) {
   return new promise(function(resolve) {
     assert(msg.length > 0, "Message should not be empty");
     assert(msg.length <= 32, "Message is too long");
-    resolve(secp256k1.sign(privateKey, msg));
+    msg = pad32(msg);
+    var sig = secp256k1.signSync(msg, privateKey).signature;
+    resolve(secp256k1.signatureExport(sig));
   });
 };
 
@@ -96,7 +115,9 @@ exports.verify = function(publicKey, msg, sig) {
   return new promise(function(resolve, reject) {
     assert(msg.length > 0, "Message should not be empty");
     assert(msg.length <= 32, "Message is too long");
-    if (secp256k1.verify(publicKey, msg, sig) === 1) {
+    msg = pad32(msg);
+    sig = secp256k1.signatureImport(sig);
+    if (secp256k1.verifySync(msg, sig, publicKey)) {
      resolve(null);
     } else {
      reject(new Error("Bad signature"));

@@ -67,39 +67,37 @@ error:
 #undef CHECK
 
 NAN_METHOD(Derive) {
-  NanScope();
-
-  if (args.Length() != 2 ||
-      !node::Buffer::HasInstance(args[0]) ||  // privkey_a
-      !node::Buffer::HasInstance(args[1])) {  // pubkey_b
-    return NanThrowError("Bad input");
+  if (info.Length() != 2 ||
+      !node::Buffer::HasInstance(info[0]) ||  // privkey_a
+      !node::Buffer::HasInstance(info[1])) {  // pubkey_b
+    return Nan::ThrowError("Bad input");
   }
 
-  char* privkey_a = node::Buffer::Data(args[0]);
-  size_t privkey_a_len = node::Buffer::Length(args[0]);
-  char* pubkey_b = node::Buffer::Data(args[1]);
-  size_t pubkey_b_len = node::Buffer::Length(args[1]);
+  char* privkey_a = node::Buffer::Data(info[0]);
+  size_t privkey_a_len = node::Buffer::Length(info[0]);
+  char* pubkey_b = node::Buffer::Data(info[1]);
+  size_t pubkey_b_len = node::Buffer::Length(info[1]);
   if (privkey_a == NULL ||
       privkey_a_len != PRIVKEY_SIZE ||
       pubkey_b == NULL ||
       pubkey_b_len != PUBKEY_SIZE ||
       pubkey_b[0] != 4) {
-    return NanThrowError("Bad input");
+    return Nan::ThrowError("Bad input");
   }
 
   uint8_t* shared = (uint8_t *)malloc(PRIVKEY_SIZE);
   if (shared == NULL ||
       derive((uint8_t *)privkey_a, (uint8_t *)pubkey_b, shared)) {
     free(shared);
-    return NanThrowError("Internal error");
+    return Nan::ThrowError("Internal error");
   }
-  NanReturnValue(NanBufferUse((char *)shared, PRIVKEY_SIZE));
+  info.GetReturnValue().Set(
+    Nan::NewBuffer((char *)shared, PRIVKEY_SIZE).ToLocalChecked());
 }
 
-void InitAll(Handle<Object> exports) {
-  exports->Set(
-      NanNew<String>("derive"),
-      NanNew<FunctionTemplate>(Derive)->GetFunction());
+NAN_MODULE_INIT(InitAll) {
+  Nan::Set(target, Nan::New<String>("derive").ToLocalChecked(),
+    Nan::GetFunction(Nan::New<FunctionTemplate>(Derive)).ToLocalChecked());
 }
 
 NODE_MODULE(ecdh, InitAll)

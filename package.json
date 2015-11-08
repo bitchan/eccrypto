@@ -49,11 +49,11 @@
     "mocha": "*"
   },
   "dependencies": {
-    "elliptic": "^5.0.0",
+    "elliptic": "^6.0.2",
     "es6-promise": "^3.0.2",
-    "nan": "^2.0.9"
+    "nan": "^2.1.0"
   },
   "optionalDependencies": {
-    "secp256k1": "^1.1.4"
+    "secp256k1": "^2.0.2"
   }
 }
