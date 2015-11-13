@@ -54,6 +54,6 @@
     "nan": "^2.1.0"
   },
   "optionalDependencies": {
-    "secp256k1": "^2.0.2"
+    "secp256k1": "^2.0.4"
   }
 }
