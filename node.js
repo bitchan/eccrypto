@@ -5,7 +5,7 @@
 "use strict";
 
 var secp256k1 = require("secp256k1");
-var ecdh = require("./build/Release/ecdh");
+var ecdh = require("./build/Release/ecdh.node");
 
 var promise = typeof Promise === "undefined" ?
               require("es6-promise").Promise :
