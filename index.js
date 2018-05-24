@@ -44,12 +44,33 @@ function assert(condition, message) {
   }
 }
 
+function sha256(msg) {
+  return crypto.createHash("sha256").update(msg).digest();
+}
+
 function sha512(msg) {
   return crypto.createHash("sha512").update(msg).digest();
 }
 
+function aes128CbcEncrypt(iv, key, plaintext) {
+  var cipher = crypto.createCipheriv("aes-128-cbc", key, iv);
+  cipher.setAutoPadding(false)
+  var firstChunk = cipher.update(plaintext);
+  var secondChunk = cipher.final();
+  return Buffer.concat([firstChunk, secondChunk]);
+}
+
+function aes128CbcDecrypt(iv, key, ciphertext) {
+  var cipher = crypto.createDecipheriv("aes-128-cbc", key, iv);
+  cipher.setAutoPadding(false)
+  var firstChunk = cipher.update(ciphertext);
+  var secondChunk = cipher.final();
+  return Buffer.concat([firstChunk, secondChunk]);
+}
+
 function aes256CbcEncrypt(iv, key, plaintext) {
   var cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
+  cipher.setAutoPadding(false)
   var firstChunk = cipher.update(plaintext);
   var secondChunk = cipher.final();
   return Buffer.concat([firstChunk, secondChunk]);
@@ -216,11 +237,11 @@ exports.encrypt = function(publicKeyTo, msg, opts) {
     ephemPublicKey = getPublic(ephemPrivateKey);
     resolve(derive(ephemPrivateKey, publicKeyTo));
   }).then(function(Px) {
-    var hash = sha512(Px);
+    var hash = ('aes128cbc' in opts) ? sha256(Px) : sha512(Px);
     var iv = opts.iv || crypto.randomBytes(16);
-    var encryptionKey = hash.slice(0, 32);
-    var macKey = hash.slice(32);
-    var ciphertext = aes256CbcEncrypt(iv, encryptionKey, msg);
+    var encryptionKey = ('aes128cbc' in opts) ? hash.slice(0, 16) : hash.slice(0, 32);
+    var macKey = ('aes128cbc' in opts) ? hash.slice(16) : hash.slice(0, 32);
+    var ciphertext = ('aes128cbc' in opts) ? aes128CbcEncrypt(iv, encryptionKey, msg) : aes256CbcEncrypt(iv, encryptionKey, msg);
     var dataToMac = Buffer.concat([iv, ephemPublicKey, ciphertext]);
     var mac = Buffer.from(hmacSha256(macKey, dataToMac));
     return {
@@ -244,15 +265,16 @@ exports.decrypt = function(privateKey, opts) {
   return derive(privateKey, opts.ephemPublicKey).then(function(Px) {
     assert(privateKey.length === 32, "Bad private key");
     assert(isValidPrivateKey(privateKey), "Bad private key");
-    var hash = sha512(Px);
-    var encryptionKey = hash.slice(0, 32);
-    var macKey = hash.slice(32);
+    var hash = ('aes128cbc' in opts) ? sha256(Px) : sha512(Px);
+    var encryptionKey = ('aes128cbc' in opts) ? hash.slice(0, 16) : hash.slice(0, 32);
+    var macKey = ('aes128cbc' in opts) ? hash.slice(16) : hash.slice(32);
     var dataToMac = Buffer.concat([
       opts.iv,
       opts.ephemPublicKey,
       opts.ciphertext
     ]);
     var realMac = hmacSha256(macKey, dataToMac);
-    assert(equalConstTime(opts.mac, realMac), "Bad MAC"); return aes256CbcDecrypt(opts.iv, encryptionKey, opts.ciphertext);
+    assert(equalConstTime(opts.mac, realMac), "Bad MAC");
+    return ('aes128cbc' in opts) ? aes128CbcDecrypt(opts.iv, encryptionKey, opts.ciphertext) : aes256CbcDecrypt(opts.iv, encryptionKey, opts.ciphertext);
   });
 };
