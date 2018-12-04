@@ -18,7 +18,7 @@ function assert(condition, message) {
 
 function randomBytes(size) {
   var arr = new Uint8Array(size);
-  global.crypto.getRandomValues(arr);
+  cryptoObj.getRandomValues(arr);
   return new Buffer(arr);
 }
 
