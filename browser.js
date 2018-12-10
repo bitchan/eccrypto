@@ -1,14 +1,12 @@
-/**
- * Browser eccrypto implementation.
- */
-
 "use strict";
 
 var EC = require("elliptic").ec;
 
 var ec = new EC("secp256k1");
-var cryptoObj = global.crypto || global.msCrypto || {};
-var subtle = cryptoObj.subtle || cryptoObj.webkitSubtle;
+var browserCrypto = global.crypto || global.msCrypto || {};
+var subtle = browserCrypto.subtle || browserCrypto.webkitSubtle;
+
+var nodeCrypto = require('crypto');
 
 function assert(condition, message) {
   if (!condition) {
@@ -16,27 +14,63 @@ function assert(condition, message) {
   }
 }
 
+// Compare two buffers in constant time to prevent timing attacks.
+function equalConstTime(b1, b2) {
+  if (b1.length !== b2.length) {
+    return false;
+  }
+  var res = 0;
+  for (var i = 0; i < b1.length; i++) {
+    res |= b1[i] ^ b2[i];  // jshint ignore:line
+  }
+  return res === 0;
+}
+
+/* This must check if we're in the browser or
+not, since the functions are different and does
+not convert using browserify */
 function randomBytes(size) {
   var arr = new Uint8Array(size);
-  cryptoObj.getRandomValues(arr);
-  return Buffer.from(arr);
+  if (typeof window === 'undefined') {
+    return new Buffer(nodeCrypto.randomBytes(size));
+  } else {
+    browserCrypto.getRandomValues(arr);
+  }
+  return new Buffer(arr);
 }
 
 function sha512(msg) {
-  return subtle.digest({name: "SHA-512"}, msg).then(function(hash) {
-    return Buffer.from(new Uint8Array(hash));
+  return new Promise(function(resolve) {
+    var hash = nodeCrypto.createHash('sha512');
+    var result = hash.update(msg).digest();
+    resolve(new Uint8Array(result));
   });
 }
 
 function getAes(op) {
   return function(iv, key, data) {
-    var importAlgorithm = {name: "AES-CBC"};
-    var keyp = subtle.importKey("raw", key, importAlgorithm, false, [op]);
-    return keyp.then(function(cryptoKey) {
-      var encAlgorithm = {name: "AES-CBC", iv: iv};
-      return subtle[op](encAlgorithm, cryptoKey, data);
-    }).then(function(result) {
-      return new Buffer.from(new Uint8Array(result));
+    return new Promise(function(resolve) {
+      if (subtle) {
+        var importAlgorithm = {name: "AES-CBC"};
+        var keyp = subtle.importKey("raw", key, importAlgorithm, false, [op]);
+        return keyp.then(function(cryptoKey) {
+          var encAlgorithm = {name: "AES-CBC", iv: iv};
+          return subtle[op](encAlgorithm, cryptoKey, data);
+        }).then(function(result) {
+          resolve(new Buffer(new Uint8Array(result)));
+        });
+      } else {
+        if (op === 'encrypt') {
+          var cipher = nodeCrypto.createCipheriv('aes-256-cbc', key, iv);
+          cipher.update(data);
+          resolve(cipher.final());
+        }
+        else if (op === 'decrypt') {
+          var decipher = nodeCrypto.createDecipheriv('aes-256-cbc', key, iv);
+          decipher.update(data);
+          resolve(decipher.final());
+        }
+      }
     });
   };
 }
@@ -45,20 +79,20 @@ var aesCbcEncrypt = getAes("encrypt");
 var aesCbcDecrypt = getAes("decrypt");
 
 function hmacSha256Sign(key, msg) {
-  var algorithm = {name: "HMAC", hash: {name: "SHA-256"}};
-  var keyp = subtle.importKey("raw", key, algorithm, false, ["sign"]);
-  return keyp.then(function(cryptoKey) {
-    return subtle.sign(algorithm, cryptoKey, msg);
-  }).then(function(sig) {
-    return new Buffer.from(new Uint8Array(sig));
+  return new Promise(function(resolve) {
+    var hmac = nodeCrypto.createHmac('sha256', Buffer.from(key));
+    hmac.update(msg);
+    var result = hmac.digest();
+    resolve(result);
   });
 }
 
 function hmacSha256Verify(key, msg, sig) {
-  var algorithm = {name: "HMAC", hash: {name: "SHA-256"}};
-  var keyp = subtle.importKey("raw", key, algorithm, false, ["verify"]);
-  return keyp.then(function(cryptoKey) {
-    return subtle.verify(algorithm, cryptoKey, sig, msg);
+  return new Promise(function(resolve) {
+    var hmac = nodeCrypto.createHmac('sha256', Buffer.from(key));
+    hmac.update(msg);
+    var expectedSig = hmac.digest();
+    resolve(equalConstTime(expectedSig, sig));
   });
 }
 
@@ -113,7 +147,6 @@ var derive = exports.derive = function(privateKeyA, publicKeyB) {
 };
 
 exports.encrypt = function(publicKeyTo, msg, opts) {
-  assert(subtle, "WebCryptoAPI is not available");
   opts = opts || {};
   // Tmp variables to save context from flat promises;
   var iv, ephemPublicKey, ciphertext, macKey;
@@ -143,7 +176,6 @@ exports.encrypt = function(publicKeyTo, msg, opts) {
 };
 
 exports.decrypt = function(privateKey, opts) {
-  assert(subtle, "WebCryptoAPI is not available");
   // Tmp variable to save context from flat promises;
   var encryptionKey;
   return derive(privateKey, opts.ephemPublicKey).then(function(Px) {
@@ -164,3 +196,4 @@ exports.decrypt = function(privateKey, opts) {
     return new Buffer.from(new Uint8Array(msg));
   });
 };
+
