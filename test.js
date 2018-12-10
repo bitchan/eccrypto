@@ -2,7 +2,6 @@ var expect = require("chai").expect;
 var createHash = require("crypto").createHash;
 var bufferEqual = require("buffer-equal");
 var eccrypto = require("./");
-var assert = require('assert'); // deleteme
 
 var msg = createHash("sha256").update("test").digest();
 var otherMsg = createHash("sha256").update("test2").digest();
@@ -11,27 +10,19 @@ var shortMsg = createHash("sha1").update("test").digest();
 var privateKey = Buffer.alloc(32);
 privateKey.fill(1);
 var publicKey = eccrypto.getPublic(privateKey);
-var publicKeyCompressed = eccrypto.getPublicCompressed(privateKey);
 
 var privateKeyA = Buffer.alloc(32);
 privateKeyA.fill(2);
 var publicKeyA = eccrypto.getPublic(privateKeyA);
-var publicKeyACompressed = eccrypto.getPublicCompressed(privateKeyA);
 
 var privateKeyB = Buffer.alloc(32);
 privateKeyB.fill(3);
 var publicKeyB = eccrypto.getPublic(privateKeyB);
-var publicKeyBCompressed = eccrypto.getPublicCompressed(privateKeyB);
 
 describe("Key conversion", function() {
   it("should allow to convert private key to public", function() {
     expect(Buffer.isBuffer(publicKey)).to.be.true;
     expect(publicKey.toString("hex")).to.equal("041b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f70beaf8f588b541507fed6a642c5ab42dfdf8120a7f639de5122d47a69a8e8d1");
-  });
-  
-  it("shouwld allow to convert private key to compressed public", function() {
-	expect(Buffer.isBuffer(publicKeyCompressed)).to.be.true;
-	expect(publicKeyCompressed.toString("hex")).to.equal("031b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f");
   });
 
   it("should throw on invalid private key", function() {
@@ -49,14 +40,6 @@ describe("ECDSA", function() {
     });
   });
 
-  it("should allow to sign and verify message using a compressed public key", function() {
-    return eccrypto.sign(privateKey, msg).then(function(sig) {
-      expect(Buffer.isBuffer(sig)).to.be.true;
-      expect(sig.toString("hex")).to.equal("3044022078c15897a34de6566a0d396fdef660698c59fef56d34ee36bef14ad89ee0f6f8022016e02e8b7285d93feafafbe745702f142973a77d5c2fa6293596357e17b3b47c");
-      return eccrypto.verify(publicKeyCompressed, msg, sig);
-    });
-  });
-    
   it("shouldn't verify incorrect signature", function(done) {
     eccrypto.sign(privateKey, msg).then(function(sig) {
       expect(Buffer.isBuffer(sig)).to.be.true;
@@ -148,19 +131,6 @@ describe("ECDH", function() {
     });
   });
 
-  it("should derive shared secret from  privkey A and compressed pubkey B", function() {
-    return eccrypto.derive(privateKeyA, publicKeyBCompressed).then(function(Px) {
-      expect(Buffer.isBuffer(Px)).to.be.true;
-      expect(Px.length).to.equal(32);
-      expect(Px.toString("hex")).to.equal("aca78f27d5f23b2e7254a0bb8df128e7c0f922d47ccac72814501e07b7291886");
-      return eccrypto.derive(privateKeyB, publicKeyA).then(function(Px2) {
-        expect(Buffer.isBuffer(Px2)).to.be.true;
-        expect(Px2.length).to.equal(32);
-        expect(bufferEqual(Px, Px2)).to.be.true;
-      });
-    });
-  });
-    
   it("should reject promise on bad keys", function(done) {
     eccrypto.derive(Buffer.from("test"), publicKeyB).catch(function() {
       eccrypto.derive(publicKeyB, publicKeyB).catch(function() {
@@ -211,24 +181,6 @@ describe("ECIES", function() {
 
   it("should encrypt and decrypt", function() {
     return eccrypto.encrypt(publicKeyA, Buffer.from("to a")).then(function(enc) {
-      return eccrypto.decrypt(privateKeyA, enc);
-    }).then(function(msg) {
-      expect(msg.toString()).to.equal("to a");
-    });
-  });
-
-  it("should encrypt with compressed public key", function() {
-    return eccrypto.encrypt(publicKeyBCompressed, Buffer.from("test"), encOpts)
-    .then(function(enc) {
-      expect(bufferEqual(enc.iv, iv)).to.be.true;
-      expect(bufferEqual(enc.ephemPublicKey, ephemPublicKey)).to.be.true;
-      expect(bufferEqual(enc.ciphertext, ciphertext)).to.be.true;
-      expect(bufferEqual(enc.mac, mac)).to.be.true;
-    });
-  });
-
-  it("should encrypt and decrypt with compressed public key", function() {
-    return eccrypto.encrypt(publicKeyACompressed, Buffer.from("to a")).then(function(enc) {
       return eccrypto.decrypt(privateKeyA, enc);
     }).then(function(msg) {
       expect(msg.toString()).to.equal("to a");

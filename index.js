@@ -17,8 +17,6 @@ try {
   if (process.env.ECCRYPTO_NO_FALLBACK) {
     throw e;
   } else {
-    console.error(e);
-    console.error('Reverting to browser version');
     return (module.exports = require("./browser"));
   }
 }
@@ -86,15 +84,6 @@ var getPublic = exports.getPublic = function(privateKey) {
   // See https://github.com/wanderer/secp256k1-node/issues/46
   var compressed = secp256k1.publicKeyCreate(privateKey);
   return secp256k1.publicKeyConvert(compressed, false);
-};
-
-/**
- * Get compressed version of public key.
- */
-var getPublicCompressed = exports.getPublicCompressed = function(privateKey) { // jshint ignore:line
-  assert(privateKey.length === 32, "Bad private key");
-  // See https://github.com/wanderer/secp256k1-node/issues/46
-  return secp256k1.publicKeyCreate(privateKey);
 };
 
 /**
@@ -212,6 +201,7 @@ exports.decrypt = function(privateKey, opts) {
       opts.ciphertext
     ]);
     var realMac = hmacSha256(macKey, dataToMac);
-    assert(equalConstTime(opts.mac, realMac), "Bad MAC"); return aes256CbcDecrypt(opts.iv, encryptionKey, opts.ciphertext);
+    assert(equalConstTime(opts.mac, realMac), "Bad MAC");
+    return aes256CbcDecrypt(opts.iv, encryptionKey, opts.ciphertext);
   });
 };

@@ -32,11 +32,11 @@ not convert using browserify */
 function randomBytes(size) {
   var arr = new Uint8Array(size);
   if (typeof window === 'undefined') {
-    return Buffer.from(nodeCrypto.randomBytes(size));
+    return new Buffer(nodeCrypto.randomBytes(size));
   } else {
     browserCrypto.getRandomValues(arr);
   }
-  return Buffer.from(arr);
+  return new Buffer(arr);
 }
 
 function sha512(msg) {
@@ -57,7 +57,7 @@ function getAes(op) {
           var encAlgorithm = {name: "AES-CBC", iv: iv};
           return subtle[op](encAlgorithm, cryptoKey, data);
         }).then(function(result) {
-          resolve(Buffer.from(new Uint8Array(result)));
+          resolve(new Buffer(new Uint8Array(result)));
         });
       } else {
         if (op === 'encrypt') {
@@ -101,17 +101,7 @@ var getPublic = exports.getPublic = function(privateKey) {
   assert(privateKey.length === 32, "Bad private key");
   // XXX(Kagami): `elliptic.utils.encode` returns array for every
   // encoding except `hex`.
-  return Buffer.from(ec.keyFromPrivate(privateKey).getPublic("arr"));
-};
-
-/**
- * Get compressed version of public key.
- */
-var getPublicCompressed = exports.getPublicCompressed = function(privateKey) { // jshint ignore:line
-  assert(privateKey.length === 32, "Bad private key");
-  // See https://github.com/wanderer/secp256k1-node/issues/46
-  let compressed = true;
-  return Buffer.from(ec.keyFromPrivate(privateKey).getPublic(compressed, "arr"));
+  return new Buffer.from(ec.keyFromPrivate(privateKey).getPublic("arr"));
 };
 
 // NOTE(Kagami): We don't use promise shim in Browser implementation
@@ -124,21 +114,14 @@ exports.sign = function(privateKey, msg) {
     assert(privateKey.length === 32, "Bad private key");
     assert(msg.length > 0, "Message should not be empty");
     assert(msg.length <= 32, "Message is too long");
-    resolve(Buffer.from(ec.sign(msg, privateKey, {canonical: true}).toDER()));
+    resolve(new Buffer.from(ec.sign(msg, privateKey, {canonical: true}).toDER()));
   });
 };
 
 exports.verify = function(publicKey, msg, sig) {
   return new Promise(function(resolve, reject) {
-    assert(publicKey.length === 65 || publicKey.length === 33, "Bad public key");
-    if (publicKey.length === 65)
-    {
-      assert(publicKey[0] === 4, "Bad public key");
-    }
-    if (publicKey.length === 33)
-    {
-      assert(publicKey[0] === 2 || publicKey[0] === 3, "Bad public key");
-    }
+    assert(publicKey.length === 65, "Bad public key");
+    assert(publicKey[0] === 4, "Bad public key");
     assert(msg.length > 0, "Message should not be empty");
     assert(msg.length <= 32, "Message is too long");
     if (ec.verify(msg, sig, publicKey)) {
@@ -154,19 +137,12 @@ var derive = exports.derive = function(privateKeyA, publicKeyB) {
     assert(Buffer.isBuffer(privateKeyA), "Bad input");
     assert(Buffer.isBuffer(publicKeyB), "Bad input");
     assert(privateKeyA.length === 32, "Bad private key");
-    assert(publicKeyB.length === 65 || publicKeyB.length === 33, "Bad public key");
-    if (publicKeyB.length === 65)
-    {
-      assert(publicKeyB[0] === 4, "Bad public key");
-    }
-    if (publicKeyB.length === 33)
-    {
-      assert(publicKeyB[0] === 2 || publicKeyB[0] === 3, "Bad public key");
-    }
+    assert(publicKeyB.length === 65, "Bad public key");
+    assert(publicKeyB[0] === 4, "Bad public key");
     var keyA = ec.keyFromPrivate(privateKeyA);
     var keyB = ec.keyFromPublic(publicKeyB);
     var Px = keyA.derive(keyB.getPublic());  // BN instance
-    resolve(Buffer.from(Px.toArray()));
+    resolve(new Buffer.from(Px.toArray()));
   });
 };
 
@@ -217,7 +193,7 @@ exports.decrypt = function(privateKey, opts) {
     assert(macGood, "Bad MAC");
     return aesCbcDecrypt(opts.iv, encryptionKey, opts.ciphertext);
   }).then(function(msg) {
-    return Buffer.from(new Uint8Array(msg));
+    return new Buffer.from(new Uint8Array(msg));
   });
 };
 
