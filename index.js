@@ -172,7 +172,7 @@ exports.encrypt = function(publicKeyTo, msg, opts) {
     var macKey = hash.slice(32);
     var ciphertext = aes256CbcEncrypt(iv, encryptionKey, msg);
     var dataToMac = Buffer.concat([iv, ephemPublicKey, ciphertext]);
-    var mac = Buffer.from(hmacSha256(macKey, dataToMac));
+    var mac = hmacSha256(macKey, dataToMac);
     return {
       iv: iv,
       ephemPublicKey: ephemPublicKey,
