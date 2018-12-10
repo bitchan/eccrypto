@@ -19,12 +19,12 @@ function assert(condition, message) {
 function randomBytes(size) {
   var arr = new Uint8Array(size);
   cryptoObj.getRandomValues(arr);
-  return Buffer.from(arr);
+  return new Buffer(arr);
 }
 
 function sha512(msg) {
   return subtle.digest({name: "SHA-512"}, msg).then(function(hash) {
-    return Buffer.from(new Uint8Array(hash));
+    return new Buffer(new Uint8Array(hash));
   });
 }
 
@@ -36,7 +36,7 @@ function getAes(op) {
       var encAlgorithm = {name: "AES-CBC", iv: iv};
       return subtle[op](encAlgorithm, cryptoKey, data);
     }).then(function(result) {
-      return new Buffer.from(new Uint8Array(result));
+      return new Buffer(new Uint8Array(result));
     });
   };
 }
@@ -50,7 +50,7 @@ function hmacSha256Sign(key, msg) {
   return keyp.then(function(cryptoKey) {
     return subtle.sign(algorithm, cryptoKey, msg);
   }).then(function(sig) {
-    return new Buffer.from(new Uint8Array(sig));
+    return new Buffer(new Uint8Array(sig));
   });
 }
 
@@ -67,7 +67,7 @@ var getPublic = exports.getPublic = function(privateKey) {
   assert(privateKey.length === 32, "Bad private key");
   // XXX(Kagami): `elliptic.utils.encode` returns array for every
   // encoding except `hex`.
-  return new Buffer.from(ec.keyFromPrivate(privateKey).getPublic("arr"));
+  return new Buffer(ec.keyFromPrivate(privateKey).getPublic("arr"));
 };
 
 // NOTE(Kagami): We don't use promise shim in Browser implementation
@@ -80,7 +80,7 @@ exports.sign = function(privateKey, msg) {
     assert(privateKey.length === 32, "Bad private key");
     assert(msg.length > 0, "Message should not be empty");
     assert(msg.length <= 32, "Message is too long");
-    resolve(new Buffer.from(ec.sign(msg, privateKey, {canonical: true}).toDER()));
+    resolve(new Buffer(ec.sign(msg, privateKey, {canonical: true}).toDER()));
   });
 };
 
@@ -108,7 +108,7 @@ var derive = exports.derive = function(privateKeyA, publicKeyB) {
     var keyA = ec.keyFromPrivate(privateKeyA);
     var keyB = ec.keyFromPublic(publicKeyB);
     var Px = keyA.derive(keyB.getPublic());  // BN instance
-    resolve(new Buffer.from(Px.toArray()));
+    resolve(new Buffer(Px.toArray()));
   });
 };
 
@@ -161,6 +161,6 @@ exports.decrypt = function(privateKey, opts) {
     assert(macGood, "Bad MAC");
     return aesCbcDecrypt(opts.iv, encryptionKey, opts.ciphertext);
   }).then(function(msg) {
-    return new Buffer.from(new Uint8Array(msg));
+    return new Buffer(new Uint8Array(msg));
   });
 };
