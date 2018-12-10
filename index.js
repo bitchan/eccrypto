@@ -64,7 +64,7 @@ function equalConstTime(b1, b2) {
 function pad32(msg){
   var buf;
   if (msg.length < 32) {
-    buf = new Buffer(32);
+    buf = Buffer.alloc(32);
     buf.fill(0);
     msg.copy(buf, 32 - msg.length);
     return buf;
