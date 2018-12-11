@@ -175,7 +175,7 @@ describe("ECDH", function() {
 
   it("should reject promise on bad arguments", function(done) {
     eccrypto.derive({}, {}).catch(function(e) {
-      expect(e.message).to.match(/bad input/i);
+      expect(e.message).to.match(/Bad private key/i);
       done();
     });
   });
