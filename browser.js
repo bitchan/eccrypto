@@ -8,10 +8,26 @@ var subtle = browserCrypto.subtle || browserCrypto.webkitSubtle;
 
 var nodeCrypto = require('crypto');
 
+const EC_GROUP_ORDER = Buffer.from('fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141', 'hex');
+const ZERO32 = Buffer.alloc(32, 0);
+
 function assert(condition, message) {
   if (!condition) {
     throw new Error(message || "Assertion failed");
   }
+}
+
+function isScalar (x) {
+  return Buffer.isBuffer(x) && x.length === 32;
+}
+
+function isValidPrivateKey(privateKey) {
+  if (!isScalar(privateKey))
+  {
+    return false;
+  }
+  return privateKey.compare(ZERO32) > 0 && // > 0
+  privateKey.compare(EC_GROUP_ORDER) < 0; // < G
 }
 
 // Compare two buffers in constant time to prevent timing attacks.
@@ -99,6 +115,7 @@ function hmacSha256Verify(key, msg, sig) {
 var getPublic = exports.getPublic = function(privateKey) {
   // This function has sync API so we throw an error immediately.
   assert(privateKey.length === 32, "Bad private key");
+  assert(isValidPrivateKey(privateKey), "Bad private key");
   // XXX(Kagami): `elliptic.utils.encode` returns array for every
   // encoding except `hex`.
   return Buffer.from(ec.keyFromPrivate(privateKey).getPublic("arr"));
@@ -109,6 +126,7 @@ var getPublic = exports.getPublic = function(privateKey) {
  */
 var getPublicCompressed = exports.getPublicCompressed = function(privateKey) { // jshint ignore:line
   assert(privateKey.length === 32, "Bad private key");
+  assert(isValidPrivateKey(privateKey), "Bad private key");
   // See https://github.com/wanderer/secp256k1-node/issues/46
   let compressed = true;
   return Buffer.from(ec.keyFromPrivate(privateKey).getPublic(compressed, "arr"));
@@ -122,6 +140,7 @@ var getPublicCompressed = exports.getPublicCompressed = function(privateKey) { /
 exports.sign = function(privateKey, msg) {
   return new Promise(function(resolve) {
     assert(privateKey.length === 32, "Bad private key");
+    assert(isValidPrivateKey(privateKey), "Bad private key");
     assert(msg.length > 0, "Message should not be empty");
     assert(msg.length <= 32, "Message is too long");
     resolve(Buffer.from(ec.sign(msg, privateKey, {canonical: true}).toDER()));
@@ -151,9 +170,10 @@ exports.verify = function(publicKey, msg, sig) {
 
 var derive = exports.derive = function(privateKeyA, publicKeyB) {
   return new Promise(function(resolve) {
-    assert(Buffer.isBuffer(privateKeyA), "Bad input");
-    assert(Buffer.isBuffer(publicKeyB), "Bad input");
+    assert(Buffer.isBuffer(privateKeyA), "Bad private key");
+    assert(Buffer.isBuffer(publicKeyB), "Bad public key");
     assert(privateKeyA.length === 32, "Bad private key");
+    assert(isValidPrivateKey(privateKeyA), "Bad private key");
     assert(publicKeyB.length === 65 || publicKeyB.length === 33, "Bad public key");
     if (publicKeyB.length === 65)
     {
@@ -176,6 +196,11 @@ exports.encrypt = function(publicKeyTo, msg, opts) {
   var iv, ephemPublicKey, ciphertext, macKey;
   return new Promise(function(resolve) {
     var ephemPrivateKey = opts.ephemPrivateKey || randomBytes(32);
+    // There is a very unlikely possibility that it is not a valid key
+    while(!isValidPrivateKey(ephemPrivateKey))
+    {
+      ephemPrivateKey = opts.ephemPrivateKey || randomBytes(32);
+    }
     ephemPublicKey = getPublic(ephemPrivateKey);
     resolve(derive(ephemPrivateKey, publicKeyTo));
   }).then(function(Px) {
