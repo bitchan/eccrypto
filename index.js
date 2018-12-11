@@ -5,6 +5,9 @@
 
 "use strict";
 
+const EC_GROUP_ORDER = Buffer.from('fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141', 'hex');
+const ZERO32 = Buffer.alloc(32, 0);
+
 var promise = typeof Promise === "undefined" ?
               require("es6-promise").Promise :
               Promise;
@@ -17,8 +20,23 @@ try {
   if (process.env.ECCRYPTO_NO_FALLBACK) {
     throw e;
   } else {
+    console.error(e);
+    console.error('Reverting to browser version');
     return (module.exports = require("./browser"));
   }
+}
+
+function isScalar (x) {
+  return Buffer.isBuffer(x) && x.length === 32;
+}
+
+function isValidPrivateKey(privateKey) {
+  if (!isScalar(privateKey))
+  {
+    return false;
+  }
+  return privateKey.compare(ZERO32) > 0 && // > 0
+  privateKey.compare(EC_GROUP_ORDER) < 0; // < G
 }
 
 function assert(condition, message) {
@@ -64,7 +82,7 @@ function equalConstTime(b1, b2) {
 function pad32(msg){
   var buf;
   if (msg.length < 32) {
-    buf = new Buffer(32);
+    buf = Buffer.alloc(32);
     buf.fill(0);
     msg.copy(buf, 32 - msg.length);
     return buf;
@@ -81,9 +99,20 @@ function pad32(msg){
  */
 var getPublic = exports.getPublic = function(privateKey) {
   assert(privateKey.length === 32, "Bad private key");
+  assert(isValidPrivateKey(privateKey), "Bad private key");
   // See https://github.com/wanderer/secp256k1-node/issues/46
   var compressed = secp256k1.publicKeyCreate(privateKey);
   return secp256k1.publicKeyConvert(compressed, false);
+};
+
+/**
+ * Get compressed version of public key.
+ */
+var getPublicCompressed = exports.getPublicCompressed = function(privateKey) { // jshint ignore:line
+  assert(privateKey.length === 32, "Bad private key");
+  assert(isValidPrivateKey(privateKey), "Bad private key");
+  // See https://github.com/wanderer/secp256k1-node/issues/46
+  return secp256k1.publicKeyCreate(privateKey);
 };
 
 /**
@@ -95,6 +124,8 @@ var getPublic = exports.getPublic = function(privateKey) {
  */
 exports.sign = function(privateKey, msg) {
   return new promise(function(resolve) {
+    assert(privateKey.length === 32, "Bad private key");
+    assert(isValidPrivateKey(privateKey), "Bad private key");
     assert(msg.length > 0, "Message should not be empty");
     assert(msg.length <= 32, "Message is too long");
     msg = pad32(msg);
@@ -134,6 +165,8 @@ exports.verify = function(publicKey, msg, sig) {
  */
 var derive = exports.derive = function(privateKeyA, publicKeyB) {
   return new promise(function(resolve) {
+    assert(privateKeyA.length === 32, "Bad private key");
+    assert(isValidPrivateKey(privateKeyA), "Bad private key");
     resolve(ecdh.derive(privateKeyA, publicKeyB));
   });
 };
@@ -163,6 +196,11 @@ exports.encrypt = function(publicKeyTo, msg, opts) {
   var ephemPublicKey;
   return new promise(function(resolve) {
     var ephemPrivateKey = opts.ephemPrivateKey || crypto.randomBytes(32);
+    // There is a very unlikely possibility that it is not a valid key
+    while(!isValidPrivateKey(ephemPrivateKey))
+    {
+      ephemPrivateKey = opts.ephemPrivateKey || crypto.randomBytes(32);
+    }
     ephemPublicKey = getPublic(ephemPrivateKey);
     resolve(derive(ephemPrivateKey, publicKeyTo));
   }).then(function(Px) {
@@ -172,7 +210,7 @@ exports.encrypt = function(publicKeyTo, msg, opts) {
     var macKey = hash.slice(32);
     var ciphertext = aes256CbcEncrypt(iv, encryptionKey, msg);
     var dataToMac = Buffer.concat([iv, ephemPublicKey, ciphertext]);
-    var mac = hmacSha256(macKey, dataToMac);
+    var mac = Buffer.from(hmacSha256(macKey, dataToMac));
     return {
       iv: iv,
       ephemPublicKey: ephemPublicKey,
@@ -192,6 +230,8 @@ exports.encrypt = function(publicKeyTo, msg, opts) {
  */
 exports.decrypt = function(privateKey, opts) {
   return derive(privateKey, opts.ephemPublicKey).then(function(Px) {
+    assert(privateKey.length === 32, "Bad private key");
+    assert(isValidPrivateKey(privateKey), "Bad private key");
     var hash = sha512(Px);
     var encryptionKey = hash.slice(0, 32);
     var macKey = hash.slice(32);
@@ -201,7 +241,6 @@ exports.decrypt = function(privateKey, opts) {
       opts.ciphertext
     ]);
     var realMac = hmacSha256(macKey, dataToMac);
-    assert(equalConstTime(opts.mac, realMac), "Bad MAC");
-    return aes256CbcDecrypt(opts.iv, encryptionKey, opts.ciphertext);
+    assert(equalConstTime(opts.mac, realMac), "Bad MAC"); return aes256CbcDecrypt(opts.iv, encryptionKey, opts.ciphertext);
   });
 };
