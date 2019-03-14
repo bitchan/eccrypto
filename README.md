@@ -43,7 +43,7 @@ var crypto = require("crypto");
 var eccrypto = require("eccrypto");
 
 // A new random 32-byte private key.
-var privateKey = crypto.randomBytes(32);
+var privateKey = eccrypto.generatePrivate();
 // Corresponding uncompressed (65-byte) public key.
 var publicKey = eccrypto.getPublic(privateKey);
 
@@ -64,12 +64,11 @@ eccrypto.sign(privateKey, msg).then(function(sig) {
 ### ECDH
 
 ```js
-var crypto = require("crypto");
 var eccrypto = require("eccrypto");
 
-var privateKeyA = crypto.randomBytes(32);
+var privateKeyA = eccrypto.generatePrivate();
 var publicKeyA = eccrypto.getPublic(privateKeyA);
-var privateKeyB = crypto.randomBytes(32);
+var privateKeyB = eccrypto.generatePrivate();
 var publicKeyB = eccrypto.getPublic(privateKeyB);
 
 eccrypto.derive(privateKeyA, publicKeyB).then(function(sharedKey1) {
@@ -82,12 +81,11 @@ eccrypto.derive(privateKeyA, publicKeyB).then(function(sharedKey1) {
 ### ECIES
 
 ```js
-var crypto = require("crypto");
 var eccrypto = require("eccrypto");
 
-var privateKeyA = crypto.randomBytes(32);
+var privateKeyA = eccrypto.generatePrivate();
 var publicKeyA = eccrypto.getPublic(privateKeyA);
-var privateKeyB = crypto.randomBytes(32);
+var privateKeyB = eccrypto.generatePrivate();
 var publicKeyB = eccrypto.getPublic(privateKeyB);
 
 // Encrypting the message for B.

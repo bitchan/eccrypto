@@ -28,7 +28,7 @@ describe("Key conversion", function() {
     expect(Buffer.isBuffer(publicKey)).to.be.true;
     expect(publicKey.toString("hex")).to.equal("041b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f70beaf8f588b541507fed6a642c5ab42dfdf8120a7f639de5122d47a69a8e8d1");
   });
-  
+
   it("shouwld allow to convert private key to compressed public", function() {
 	expect(Buffer.isBuffer(publicKeyCompressed)).to.be.true;
 	expect(publicKeyCompressed.toString("hex")).to.equal("031b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f");
@@ -56,7 +56,7 @@ describe("ECDSA", function() {
       return eccrypto.verify(publicKeyCompressed, msg, sig);
     });
   });
-    
+
   it("shouldn't verify incorrect signature", function(done) {
     eccrypto.sign(privateKey, msg).then(function(sig) {
       expect(Buffer.isBuffer(sig)).to.be.true;
@@ -160,7 +160,7 @@ describe("ECDH", function() {
       });
     });
   });
-    
+
   it("should reject promise on bad keys", function(done) {
     eccrypto.derive(Buffer.from("test"), publicKeyB).catch(function() {
       eccrypto.derive(publicKeyB, publicKeyB).catch(function() {
@@ -234,6 +234,17 @@ describe("ECIES", function() {
       expect(msg.toString()).to.equal("to a");
     });
   });
+
+  it("should encrypt and decrypt with generated private and public key", function () {
+    var privateKey = eccrypto.generatePrivate();
+    var publicKey = eccrypto.getPublic(privateKey);
+    return eccrypto.encrypt(publicKey, Buffer.from("generated private key"))
+        .then(function(enc) { return eccrypto.decrypt(privateKey, enc); })
+        .then(function(msg) {
+          expect(msg.toString()).to.equal("generated private key");
+        });
+  });
+
 
   it("should reject promise on bad private key when decrypting", function(done) {
     eccrypto.encrypt(publicKeyA, Buffer.from("test")).then(function(enc) {
