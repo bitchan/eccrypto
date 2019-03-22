@@ -113,11 +113,11 @@ function hmacSha256Verify(key, msg, sig) {
 }
 
 /**
-* Generate a new valid private key. Will use the window.crypto or window.msCrypto as source
-* depending on your browser.
-* @return {Buffer} A 32-byte private key.
-* @function
-*/
+  * Generate a new valid private key. Will use the window.crypto or window.msCrypto as source
+  * depending on your browser.
+  * @return {Buffer} A 32-byte private key.
+  * @function
+  */
 exports.generatePrivate = function () {
   var privateKey = randomBytes(32);
   while (!isValidPrivateKey(privateKey)) {
