@@ -92,6 +92,19 @@ function pad32(msg){
 }
 
 /**
+ * Generate a new valid private key. Will use crypto.randomBytes as source.
+ * @return {Buffer} A 32-byte private key.
+ * @function
+ */
+exports.generatePrivate = function() {
+  var privateKey = crypto.randomBytes(32);
+  while (!isValidPrivateKey(privateKey)) {
+    privateKey = crypto.randomBytes(32);
+  }
+  return privateKey;
+};
+
+/**
  * Compute the public key for a given private key.
  * @param {Buffer} privateKey - A 32-byte private key
  * @return {Buffer} A 65-byte public key.

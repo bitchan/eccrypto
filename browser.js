@@ -112,6 +112,20 @@ function hmacSha256Verify(key, msg, sig) {
   });
 }
 
+/**
+  * Generate a new valid private key. Will use the window.crypto or window.msCrypto as source
+  * depending on your browser.
+  * @return {Buffer} A 32-byte private key.
+  * @function
+  */
+exports.generatePrivate = function () {
+  var privateKey = randomBytes(32);
+  while (!isValidPrivateKey(privateKey)) {
+    privateKey = randomBytes(32);
+  }
+  return privateKey;
+};
+
 var getPublic = exports.getPublic = function(privateKey) {
   // This function has sync API so we throw an error immediately.
   assert(privateKey.length === 32, "Bad private key");
