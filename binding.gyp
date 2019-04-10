@@ -11,11 +11,11 @@
             [
               "target_arch=='x64'", {
                 "variables": {
-                  "openssl_root%": "C:/OpenSSL-Win64"
+                  "openssl_root%": "C:/Program Files/OpenSSL-Win64"
                 },
               }, {
                 "variables": {
-                  "openssl_root%": "C:/OpenSSL-Win32"
+                  "openssl_root%": "C:/Program Files (x86)/OpenSSL-Win32"
                 }
               }
             ]
