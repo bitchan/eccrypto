@@ -20,8 +20,7 @@ try {
   if (process.env.ECCRYPTO_NO_FALLBACK) {
     throw e;
   } else {
-    console.error(e);
-    console.error('Reverting to browser version');
+    console.info('secp256k1 unavailable, reverting to browser version');
     return (module.exports = require("./browser"));
   }
 }
@@ -142,7 +141,7 @@ exports.sign = function(privateKey, msg) {
     assert(msg.length > 0, "Message should not be empty");
     assert(msg.length <= 32, "Message is too long");
     msg = pad32(msg);
-    var sig = secp256k1.signSync(msg, privateKey).signature;
+    var sig = secp256k1.sign(msg, privateKey).signature;
     resolve(secp256k1.signatureExport(sig));
   });
 };
@@ -161,7 +160,7 @@ exports.verify = function(publicKey, msg, sig) {
     assert(msg.length <= 32, "Message is too long");
     msg = pad32(msg);
     sig = secp256k1.signatureImport(sig);
-    if (secp256k1.verifySync(msg, sig, publicKey)) {
+    if (secp256k1.verify(msg, sig, publicKey)) {
      resolve(null);
     } else {
      reject(new Error("Bad signature"));

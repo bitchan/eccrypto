@@ -1,11 +1,10 @@
 language: node_js
 node_js:
-  - "8.14.0"
-  - "10.14.1"
-  - "11.4.0"
+  - "10.16.3"
+  - "12.10.0"
 sudo: false
 addons:
-  firefox: "63.0.3"
+  firefox: "latest"
   apt:
     sources:
       - ubuntu-toolchain-r-test
