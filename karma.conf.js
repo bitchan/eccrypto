@@ -1,5 +1,3 @@
-process.env.CHROME_BIN = "chromium-browser";
-
 module.exports = function(config) {
   config.set({
 
@@ -55,14 +53,7 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ["Chromium", "Firefox"],
-    customLaunchers: {
-      Chromium: {
-        base: "Chrome",
-        flags: ["--no-sandbox"],
-      },
-    },
-
+    browsers: ["Chrome", "Firefox"],
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits

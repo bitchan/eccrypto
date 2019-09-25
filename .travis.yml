@@ -5,6 +5,7 @@ node_js:
 sudo: false
 addons:
   firefox: "latest"
+  chrome: stable
   apt:
     sources:
       - ubuntu-toolchain-r-test
@@ -12,6 +13,8 @@ addons:
       - build-essential
 env:
   - CXX=g++
+services:
+  - xvfb
 notifications:
   email:
     on_success: never
