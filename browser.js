@@ -84,15 +84,10 @@ function getAes(op) {
         if (op === "encrypt") {
           var cipher = nodeCrypto.createCipheriv("aes-256-cbc", key, iv);
 
-          var firstChunk = cipher.update(data);
-          var secondChunk = cipher.final();
-          resolve(Buffer.concat([firstChunk, secondChunk]));
+          resolve(Buffer.concat([cipher.update(data), cipher.final()]));
         } else if (op === "decrypt") {
           var decipher = nodeCrypto.createDecipheriv("aes-256-cbc", key, iv);
-
-          var firstChunk = decipher.update(data);
-          var secondChunk = decipher.final();
-          resolve(Buffer.concat([firstChunk, secondChunk]));
+          resolve(Buffer.concat([decipher.update(data), decipher.final()]));
         }
       }
     });
@@ -146,7 +141,7 @@ var getPublic = (exports.getPublic = function(privateKey) {
 /**
  * Get compressed version of public key.
  */
-var getPublicCompressed = (exports.getPublicCompressed = function(privateKey) {
+exports.getPublicCompressed = function(privateKey) {
   // jshint ignore:line
   assert(privateKey.length === 32, "Bad private key");
   assert(isValidPrivateKey(privateKey), "Bad private key");
@@ -155,7 +150,7 @@ var getPublicCompressed = (exports.getPublicCompressed = function(privateKey) {
   return Buffer.from(
     ec.keyFromPrivate(privateKey).getPublic(compressed, "arr")
   );
-});
+};
 
 // NOTE(Kagami): We don't use promise shim in Browser implementation
 // because it's supported natively in new browsers (see
