@@ -47,7 +47,10 @@ not, since the functions are different and does
 not convert using browserify */
 function randomBytes(size) {
   var arr = new Uint8Array(size);
-  if (typeof window === 'undefined') {
+  if (
+    typeof browserCrypto === 'undefined' ||
+    typeof browserCrypto.getRandomValues === 'undefined'
+  ) {
     return Buffer.from(nodeCrypto.randomBytes(size));
   } else {
     browserCrypto.getRandomValues(arr);
