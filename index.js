@@ -263,8 +263,13 @@ exports.encrypt = function(publicKeyTo, msg, opts) {
  */
 exports.decrypt = function(privateKey, opts) {
   return derive(privateKey, opts.ephemPublicKey).then(function(Px) {
-    assert(privateKey.length === 32, "Bad private key");
-    assert(isValidPrivateKey(privateKey), "Bad private key");
+    if ('aes128cbc' in opts) {
+      assert(privateKey.length === 16, "Bad private key");
+      assert(isValidPrivateKey(privateKey), "Bad private key");
+    } else {
+      assert(privateKey.length === 32, "Bad private key");
+      assert(isValidPrivateKey(privateKey), "Bad private key");
+    }
     var hash = ('aes128cbc' in opts) ? sha256(Px) : sha512(Px);
     var encryptionKey = ('aes128cbc' in opts) ? hash.slice(0, 16) : hash.slice(0, 32);
     var macKey = ('aes128cbc' in opts) ? hash.slice(16) : hash.slice(32);
