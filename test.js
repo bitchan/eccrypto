@@ -229,7 +229,7 @@ describe("ECIES", function() {
     return eccrypto.encrypt(publicKeyA, Buffer.from("message size that is greater than 15 for sure =)")).then(function(enc) {
       return eccrypto.decrypt(privateKeyA, enc);
     }).then(function(msg) {
-      expect(msg.toString()).to.equal("to a");
+      expect(msg.toString()).to.equal("message size that is greater than 15 for sure =)");
     });
   });
 
