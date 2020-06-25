@@ -217,6 +217,22 @@ describe("ECIES", function() {
     });
   });
 
+  it("should encrypt and decrypt", function() {
+    return eccrypto.encrypt(publicKeyA, Buffer.from("to a")).then(function(enc) {
+      return eccrypto.decrypt(privateKeyA, enc);
+    }).then(function(msg) {
+      expect(msg.toString()).to.equal("to a");
+    });
+  });
+
+  it("should encrypt and decrypt with message size > 15", function() {
+    return eccrypto.encrypt(publicKeyA, Buffer.from("message size that is greater than 15 for sure =)")).then(function(enc) {
+      return eccrypto.decrypt(privateKeyA, enc);
+    }).then(function(msg) {
+      expect(msg.toString()).to.equal("to a");
+    });
+  });
+
   it("should encrypt with compressed public key", function() {
     return eccrypto.encrypt(publicKeyBCompressed, Buffer.from("test"), encOpts)
     .then(function(enc) {
