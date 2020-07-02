@@ -1,7 +1,7 @@
 {
-  "name": "eccrypto",
+  "name": "eccrypto-torus",
   "version": "1.1.3",
-  "description": "JavaScript Elliptic curve cryptography library",
+  "description": "JavaScript Elliptic curve cryptography library, includes fix to browser.js so that encrypt/decrypt works",
   "main": "index.js",
   "browser": "browser.js",
   "scripts": {
@@ -29,7 +29,7 @@
     "elliptic",
     "curve"
   ],
-  "author": "Kagami Hiiragi",
+  "author": "Zhen Yu Yong",
   "license": "CC0-1.0",
   "bugs": {
     "url": "https://github.com/bitchan/eccrypto/issues"
