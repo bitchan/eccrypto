@@ -55,6 +55,12 @@ function randomBytes(size) {
   return Buffer.from(arr);
 }
 
+function sha256(msg) {
+  return subtle.digest({name: "SHA-256"}, msg).then(function(hash) {
+    return new Buffer(new Uint8Array(hash));
+  });
+}
+
 function sha512(msg) {
   return new Promise(function(resolve) {
     var hash = nodeCrypto.createHash('sha512');
@@ -220,11 +226,11 @@ exports.encrypt = function(publicKeyTo, msg, opts) {
     ephemPublicKey = getPublic(ephemPrivateKey);
     resolve(derive(ephemPrivateKey, publicKeyTo));
   }).then(function(Px) {
-    return sha512(Px);
+    return ('aes128cbc' in  opts) ? sha256(Px) : sha512(Px);
   }).then(function(hash) {
     iv = opts.iv || randomBytes(16);
-    var encryptionKey = hash.slice(0, 32);
-    macKey = hash.slice(32);
+    var encryptionKey = ('aes128cbc' in opts) ? hash.slice(0, 16) : hash.slice(0, 32);
+    macKey = ('aes128cbc' in opts) ? hash.slice(16) : hash.slice(32);
     return aesCbcEncrypt(iv, encryptionKey, msg);
   }).then(function(data) {
     ciphertext = data;
