@@ -49,6 +49,13 @@
                 }
               }
             ],
+            [
+              "target_arch=='arm64'", {
+                "variables": {
+                  "openssl_config_path": "<(nodedir)/deps/openssl/config/arm"
+                }
+              }
+            ],
           ],
           "include_dirs": [
             "<(nodedir)/deps/openssl/openssl/include",
