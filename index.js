@@ -21,7 +21,8 @@ try {
     throw e;
   } else {
     console.info('secp256k1 unavailable, reverting to browser version');
-    return (module.exports = require("./browser"));
+    module.exports = require("./browser");
+//     return (module.exports = require("./browser"));
   }
 }
 
