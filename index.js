@@ -72,7 +72,7 @@ function equalConstTime(b1, b2) {
     return false;
   }
   var res = 0;
-  for (var i = 0; i < b1.length; i++) {
+  for (var i = 0; i < b1.length; i += 1) {
     res |= b1[i] ^ b2[i];  // jshint ignore:line
   }
   return res === 0;
@@ -88,6 +88,33 @@ function pad32(msg){
   } else {
     return msg;
   }
+}
+
+function trimBufferZeros(buf) {
+  var i = 0;
+  while (!buf[i] && i < buf.length) {
+    i += 1;
+  }
+  return buf.slice(i);
+}
+
+function decryptWithDerivedKey(privateKey, opts, Px, trimZeros) {
+  if (trimZeros) {
+    Px = trimBufferZeros(Px);
+  }
+  assert(privateKey.length === 32, "Bad private key");
+  assert(isValidPrivateKey(privateKey), "Bad private key");
+  var hash = sha512(Px);
+  var encryptionKey = hash.slice(0, 32);
+  var macKey = hash.slice(32);
+  var dataToMac = Buffer.concat([
+    opts.iv,
+    opts.ephemPublicKey,
+    opts.ciphertext,
+  ]);
+  var realMac = hmacSha256(macKey, dataToMac);
+  assert(equalConstTime(opts.mac, realMac), "Bad MAC");
+  return aes256CbcDecrypt(opts.iv, encryptionKey, opts.ciphertext);
 }
 
 /**
@@ -240,19 +267,15 @@ exports.encrypt = function(publicKeyTo, msg, opts) {
  * @return {Promise.<Buffer>} - A promise that resolves with the
  * plaintext on successful decryption and rejects on failure.
  */
-exports.decrypt = function(privateKey, opts) {
-  return derive(privateKey, opts.ephemPublicKey).then(function(Px) {
-    assert(privateKey.length === 32, "Bad private key");
-    assert(isValidPrivateKey(privateKey), "Bad private key");
-    var hash = sha512(Px);
-    var encryptionKey = hash.slice(0, 32);
-    var macKey = hash.slice(32);
-    var dataToMac = Buffer.concat([
-      opts.iv,
-      opts.ephemPublicKey,
-      opts.ciphertext
-    ]);
-    var realMac = hmacSha256(macKey, dataToMac);
-    assert(equalConstTime(opts.mac, realMac), "Bad MAC"); return aes256CbcDecrypt(opts.iv, encryptionKey, opts.ciphertext);
+exports.decrypt = function (privateKey, opts) {
+  return derive(privateKey, opts.ephemPublicKey).then(function (Px) {
+    try {
+      return decryptWithDerivedKey(privateKey, opts, Px, false);
+    } catch (err) {
+      if (!Px[0]) {
+        return decryptWithDerivedKey(privateKey, opts, Px, true);
+      }
+      throw err;
+    }
   });
 };

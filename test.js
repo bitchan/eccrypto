@@ -23,6 +23,9 @@ privateKeyB.fill(3);
 var publicKeyB = eccrypto.getPublic(privateKeyB);
 var publicKeyBCompressed = eccrypto.getPublicCompressed(privateKeyB);
 
+var privateKeyC = Buffer.from('bec50b320f17a60422a95619579675badf32c404289cb7bfa0b033b82ac17d98', 'hex');
+var publicKeyC = eccrypto.getPublic(privateKeyC);
+
 describe("Key conversion", function() {
   it("should allow to convert private key to public", function() {
     expect(Buffer.isBuffer(publicKey)).to.be.true;
@@ -158,6 +161,13 @@ describe("ECDH", function() {
         expect(Px2.length).to.equal(32);
         expect(bufferEqual(Px, Px2)).to.be.true;
       });
+    });
+  });
+
+  it("should derive 32 byte long shared secret from privkey C and pubkey C", function() {
+    return eccrypto.derive(privateKeyC, publicKeyC).then(function(Px) {
+      expect(Buffer.isBuffer(Px)).to.be.true;
+      expect(Px.length).to.equal(32);
     });
   });
 
