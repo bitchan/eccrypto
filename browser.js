@@ -36,7 +36,7 @@ function equalConstTime(b1, b2) {
     return false;
   }
   var res = 0;
-  for (var i = 0; i < b1.length; i += 1) {
+  for (var i = 0; i < b1.length; i++) {
     res |= b1[i] ^ b2[i];  // jshint ignore:line
   }
   return res === 0;
