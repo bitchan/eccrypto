@@ -263,6 +263,19 @@ describe("ECIES", function() {
         });
   });
 
+  it("should decrypt message with bad derived key", function() {
+    var sk = Buffer.from('2794d25fbfbd98c91182f3357f779d742c9cb87636d50c91159c3fc62e08a2fc', 'hex');
+    var opts = {
+      iv: Buffer.from('2ab47869855480ae9f533d7a759e0bff', 'hex'),
+      ephemPublicKey: Buffer.from('0424a921276ecd28c2f752a5588fbbadefe978ea215998dc8baf6adb092bc22ecf2b01f908c2251383349e70c16fac6b5ba9c2e39775098fec70bbd0e0744b7cb8', 'hex'),
+      ciphertext: Buffer.from('98cf08e2152ecf53ce8294adb00d1deb', 'hex'),
+      mac: Buffer.from('38b895e9837b371d901f13b39cb0b8c09f27228935d98bf49e249368a6e2dd9f', 'hex'),
+    };
+    return eccrypto.decrypt(sk, opts).then(function(msg) {
+      expect(msg.toString()).to.equal("hello world!");
+    });
+  });
+
 
   it("should reject promise on bad private key when decrypting", function(done) {
     eccrypto.encrypt(publicKeyA, Buffer.from("test")).then(function(enc) {
