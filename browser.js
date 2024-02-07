@@ -114,6 +114,40 @@ function hmacSha256Verify(key, msg, sig) {
   });
 }
 
+function trimBufferZeros(buf) {
+  var i = 0;
+  while (!buf[i] && i < buf.length) {
+    i += 1;
+  }
+  return buf.slice(i);
+}
+
+function decryptWithDerivedKey(privateKey, opts, Px, trimZeros) {
+  if (trimZeros) {
+    Px = trimBufferZeros(Px);
+  }
+  // Tmp variable to save context from flat promises;
+  var encryptionKey;
+  return sha512(Px)
+      .then(function (hash) {
+        encryptionKey = hash.slice(0, 32);
+        var macKey = hash.slice(32);
+        var dataToMac = Buffer.concat([
+          opts.iv,
+          opts.ephemPublicKey,
+          opts.ciphertext,
+        ]);
+        return hmacSha256Verify(macKey, dataToMac, opts.mac);
+      })
+      .then(function (macGood) {
+        assert(macGood, "Bad MAC");
+        return aesCbcDecrypt(opts.iv, encryptionKey, opts.ciphertext);
+      })
+      .then(function (msg) {
+        return Buffer.from(new Uint8Array(msg));
+      });
+}
+
 /**
   * Generate a new valid private key. Will use the window.crypto or window.msCrypto as source
   * depending on your browser.
@@ -202,7 +236,7 @@ var derive = exports.derive = function(privateKeyA, publicKeyB) {
     var keyA = ec.keyFromPrivate(privateKeyA);
     var keyB = ec.keyFromPublic(publicKeyB);
     var Px = keyA.derive(keyB.getPublic());  // BN instance
-    resolve(Buffer.from(Px.toArray()));
+    resolve(Buffer.from(Px.toArray(undefined, 32)));
   });
 };
 
@@ -241,24 +275,14 @@ exports.encrypt = function(publicKeyTo, msg, opts) {
 };
 
 exports.decrypt = function(privateKey, opts) {
-  // Tmp variable to save context from flat promises;
-  var encryptionKey;
   return derive(privateKey, opts.ephemPublicKey).then(function(Px) {
-    return sha512(Px);
-  }).then(function(hash) {
-    encryptionKey = hash.slice(0, 32);
-    var macKey = hash.slice(32);
-    var dataToMac = Buffer.concat([
-      opts.iv,
-      opts.ephemPublicKey,
-      opts.ciphertext
-    ]);
-    return hmacSha256Verify(macKey, dataToMac, opts.mac);
-  }).then(function(macGood) {
-    assert(macGood, "Bad MAC");
-    return aesCbcDecrypt(opts.iv, encryptionKey, opts.ciphertext);
-  }).then(function(msg) {
-    return Buffer.from(new Uint8Array(msg));
+    return decryptWithDerivedKey(privateKey, opts, Px, false)
+        .catch(function(err) {
+          if (!Px[0]) {
+            return decryptWithDerivedKey(privateKey, opts, Px, true);
+          }
+          return Promise.reject(err);
+        });
   });
 };
 

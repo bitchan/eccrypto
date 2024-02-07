@@ -23,6 +23,9 @@ privateKeyB.fill(3);
 var publicKeyB = eccrypto.getPublic(privateKeyB);
 var publicKeyBCompressed = eccrypto.getPublicCompressed(privateKeyB);
 
+var privateKeyC = Buffer.from('bec50b320f17a60422a95619579675badf32c404289cb7bfa0b033b82ac17d98', 'hex');
+var publicKeyC = eccrypto.getPublic(privateKeyC);
+
 describe("Key conversion", function() {
   it("should allow to convert private key to public", function() {
     expect(Buffer.isBuffer(publicKey)).to.be.true;
@@ -161,6 +164,13 @@ describe("ECDH", function() {
     });
   });
 
+  it("should derive 32 byte long shared secret from privkey C and pubkey C", function() {
+    return eccrypto.derive(privateKeyC, publicKeyC).then(function(Px) {
+      expect(Buffer.isBuffer(Px)).to.be.true;
+      expect(Px.length).to.equal(32);
+    });
+  });
+
   it("should reject promise on bad keys", function(done) {
     eccrypto.derive(Buffer.from("test"), publicKeyB).catch(function() {
       eccrypto.derive(publicKeyB, publicKeyB).catch(function() {
@@ -251,6 +261,19 @@ describe("ECIES", function() {
         .then(function(msg) {
           expect(msg.toString()).to.equal("generated private key");
         });
+  });
+
+  it("should decrypt message with bad derived key", function() {
+    var sk = Buffer.from('2794d25fbfbd98c91182f3357f779d742c9cb87636d50c91159c3fc62e08a2fc', 'hex');
+    var opts = {
+      iv: Buffer.from('2ab47869855480ae9f533d7a759e0bff', 'hex'),
+      ephemPublicKey: Buffer.from('0424a921276ecd28c2f752a5588fbbadefe978ea215998dc8baf6adb092bc22ecf2b01f908c2251383349e70c16fac6b5ba9c2e39775098fec70bbd0e0744b7cb8', 'hex'),
+      ciphertext: Buffer.from('98cf08e2152ecf53ce8294adb00d1deb', 'hex'),
+      mac: Buffer.from('38b895e9837b371d901f13b39cb0b8c09f27228935d98bf49e249368a6e2dd9f', 'hex'),
+    };
+    return eccrypto.decrypt(sk, opts).then(function(msg) {
+      expect(msg.toString()).to.equal("hello world!");
+    });
   });
 
 
